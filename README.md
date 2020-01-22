@@ -1,2 +1,2 @@
-# wtss-stac
-Web Time Series Service Specification
+# Web Time Series Service Specification
+
