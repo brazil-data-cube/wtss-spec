@@ -1,0 +1,196 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://www.esensing.dpi.inpe.br/wtss/time_series_response.json",
+  "type": "object",
+  "title": "The Time series root schema",
+  "required": [
+    "result",
+    "query"
+  ],
+  "properties": {
+    "result": {
+      "$id": "#/properties/result",
+      "type": "object",
+      "title": "The Result Schema",
+      "required": [
+        "attributes",
+        "timeline",
+        "coordinates"
+      ],
+      "properties": {
+        "attributes": {
+          "$id": "#/properties/result/properties/attributes",
+          "type": "array",
+          "title": "Time series result grouped by attribute name",
+          "items": {
+            "$id": "#/properties/result/properties/attributes/items",
+            "type": "object",
+            "title": "The Items Schema",
+            "required": [
+              "attribute",
+              "values"
+            ],
+            "properties": {
+              "attribute": {
+                "$id": "#/properties/result/properties/attributes/items/properties/attribute",
+                "type": "string",
+                "title": "The Attribute Schema",
+                "default": "",
+                "examples": [
+                  "ndvi"
+                ],
+                "pattern": "^(.*)$"
+              },
+              "values": {
+                "$id": "#/properties/result/properties/attributes/items/properties/values",
+                "type": "array",
+                "title": "The Values Schema",
+                "items": {
+                  "$id": "#/properties/result/properties/attributes/items/properties/values/items",
+                  "type": "integer",
+                  "title": "The Items Schema",
+                  "default": 0,
+                  "examples": [
+                    8316,
+                    5713,
+                    8184
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "timeline": {
+          "$id": "#/properties/result/properties/timeline",
+          "type": "array",
+          "title": "The Timeline Schema",
+          "items": {
+            "$id": "#/properties/result/properties/timeline/items",
+            "type": "string",
+            "title": "List of affected times",
+            "default": "",
+            "examples": [
+              "2015-01-01",
+              "2017-12-03",
+              "2017-12-19"
+            ],
+            "pattern": "^(.*)$"
+          }
+        },
+        "coordinates": {
+          "$id": "#/properties/result/properties/coordinates",
+          "type": "object",
+          "title": "The Coordinates Schema",
+          "required": [
+            "longitude",
+            "latitude",
+            "col",
+            "row"
+          ],
+          "properties": {
+            "longitude": {
+              "$id": "#/properties/result/properties/coordinates/properties/longitude",
+              "type": "number",
+              "title": "The Longitude Schema"
+            },
+            "latitude": {
+              "$id": "#/properties/result/properties/coordinates/properties/latitude",
+              "type": "number",
+              "title": "The Latitude Schema"
+            },
+            "col": {
+              "$id": "#/properties/result/properties/coordinates/properties/col",
+              "type": "number",
+              "title": "The Col Schema"
+            },
+            "row": {
+              "$id": "#/properties/result/properties/coordinates/properties/row",
+              "type": "number",
+              "title": "The Row Schema"
+            }
+          }
+        }
+      }
+    },
+    "query": {
+      "$id": "#/properties/query",
+      "type": "object",
+      "title": "The Query Schema",
+      "required": [
+        "coverage",
+        "attributes",
+        "longitude",
+        "latitude",
+        "start_date",
+        "end_date"
+      ],
+      "properties": {
+        "coverage": {
+          "$id": "#/properties/query/properties/coverage",
+          "type": "string",
+          "title": "The Coverage Schema",
+          "default": "",
+          "examples": [
+            "MOD13Q1"
+          ],
+          "pattern": "^(.*)$"
+        },
+        "attributes": {
+          "$id": "#/properties/query/properties/attributes",
+          "type": "array",
+          "title": "The Attributes Schema",
+          "items": {
+            "$id": "#/properties/query/properties/attributes/items",
+            "type": "string",
+            "title": "The Items Schema",
+            "default": "",
+            "examples": [
+              "ndvi",
+              "evi"
+            ],
+            "pattern": "^(.*)$"
+          }
+        },
+        "longitude": {
+          "$id": "#/properties/query/properties/longitude",
+          "type": "integer",
+          "title": "The Longitude Schema",
+          "default": 0,
+          "examples": [
+            -54
+          ]
+        },
+        "latitude": {
+          "$id": "#/properties/query/properties/latitude",
+          "type": "integer",
+          "title": "The Latitude Schema",
+          "default": 0,
+          "examples": [
+            -12
+          ]
+        },
+        "start_date": {
+          "$id": "#/properties/query/properties/start_date",
+          "type": "string",
+          "title": "The Start_date Schema",
+          "default": "",
+          "examples": [
+            "2015-01-01"
+          ],
+          "pattern": "^(.*)$"
+        },
+        "end_date": {
+          "$id": "#/properties/query/properties/end_date",
+          "type": "string",
+          "title": "The End_date Schema",
+          "default": "",
+          "examples": [
+            "2017-12-31"
+          ],
+          "pattern": "^(.*)$"
+        }
+      }
+    }
+  }
+}
