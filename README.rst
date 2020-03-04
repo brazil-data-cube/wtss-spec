@@ -244,3 +244,12 @@ For Python developers, you can serve the HTMl with:
 
         python3.7 -m http.server 8080 --directory dist
 
+
+License
+=======
+
+.. admonition::
+    Copyright (C) 2019 INPE.
+
+    Web Time Series Service is free software; you can redistribute it and/or modify it
+    under the terms of the MIT License; see LICENSE file for more details.
