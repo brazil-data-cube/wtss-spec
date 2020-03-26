@@ -1,0 +1,400 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://www.esensing.dpi.inpe.br/wtss/describe_coverage_response.json",
+  "type": "object",
+  "title": "The Root Schema",
+  "required": [
+    "name",
+    "description",
+    "detail",
+    "dimensions",
+    "spatial_extent",
+    "spatial_resolution",
+    "crs",
+    "timeline",
+    "attributes"
+  ],
+  "properties": {
+    "name": {
+      "$id": "#/properties/name",
+      "type": "string",
+      "title": "The Name Schema",
+      "default": "",
+      "examples": [
+        "MOD13Q1"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "description": {
+      "$id": "#/properties/description",
+      "type": "string",
+      "title": "The Description Schema",
+      "default": ""
+    },
+    "detail": {
+      "$id": "#/properties/detail",
+      "type": "string",
+      "title": "The Detail Schema",
+      "default": "",
+      "examples": [
+        "https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mod13q1_v006"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "dimensions": {
+      "$id": "#/properties/dimensions",
+      "type": "object",
+      "title": "The Dimensions Schema",
+      "required": [
+        "x",
+        "y",
+        "t"
+      ],
+      "properties": {
+        "x": {
+          "$id": "#/properties/dimensions/properties/x",
+          "type": "object",
+          "title": "The X Schema",
+          "required": [
+            "name",
+            "min_idx",
+            "max_idx"
+          ],
+          "properties": {
+            "name": {
+              "$id": "#/properties/dimensions/properties/x/properties/name",
+              "type": "string",
+              "title": "The Name Schema",
+              "default": "",
+              "examples": [
+                "col_id"
+              ],
+              "pattern": "^(.*)$"
+            },
+            "min_idx": {
+              "$id": "#/properties/dimensions/properties/x/properties/min_idx",
+              "type": "integer",
+              "title": "The Min_idx Schema",
+              "default": 0,
+              "examples": [
+                1
+              ]
+            },
+            "max_idx": {
+              "$id": "#/properties/dimensions/properties/x/properties/max_idx",
+              "type": "integer",
+              "title": "The Max_idx Schema",
+              "default": 0,
+              "examples": [
+                24000
+              ]
+            }
+          }
+        },
+        "y": {
+          "$id": "#/properties/dimensions/properties/y",
+          "type": "object",
+          "title": "The Y Schema",
+          "required": [
+            "name",
+            "min_idx",
+            "max_idx"
+          ],
+          "properties": {
+            "name": {
+              "$id": "#/properties/dimensions/properties/y/properties/name",
+              "type": "string",
+              "title": "The Name Schema",
+              "default": "",
+              "examples": [
+                "row_id"
+              ],
+              "pattern": "^(.*)$"
+            },
+            "min_idx": {
+              "$id": "#/properties/dimensions/properties/y/properties/min_idx",
+              "type": "integer",
+              "title": "The Min_idx Schema",
+              "default": 0,
+              "examples": [
+                1
+              ]
+            },
+            "max_idx": {
+              "$id": "#/properties/dimensions/properties/y/properties/max_idx",
+              "type": "integer",
+              "title": "The Max_idx Schema",
+              "default": 0,
+              "examples": [
+                24000
+              ]
+            }
+          }
+        },
+        "t": {
+          "$id": "#/properties/dimensions/properties/t",
+          "type": "object",
+          "title": "The T Schema",
+          "required": [
+            "name",
+            "min_idx",
+            "max_idx"
+          ],
+          "properties": {
+            "name": {
+              "$id": "#/properties/dimensions/properties/t/properties/name",
+              "type": "string",
+              "title": "The Name Schema",
+              "default": "",
+              "examples": [
+                "time_id"
+              ],
+              "pattern": "^(.*)$"
+            },
+            "min_idx": {
+              "$id": "#/properties/dimensions/properties/t/properties/min_idx",
+              "type": "integer",
+              "title": "The Min_idx Schema",
+              "default": 0,
+              "examples": [
+                1
+              ]
+            },
+            "max_idx": {
+              "$id": "#/properties/dimensions/properties/t/properties/max_idx",
+              "type": "integer",
+              "title": "The Max_idx Schema",
+              "default": 0,
+              "examples": [
+                423
+              ]
+            }
+          }
+        }
+      }
+    },
+    "spatial_extent": {
+      "$id": "#/properties/spatial_extent",
+      "type": "object",
+      "title": "The Spatial_extent Schema",
+      "required": [
+        "xmin",
+        "xmax",
+        "ymin",
+        "ymax"
+      ],
+      "properties": {
+        "xmin": {
+          "$id": "#/properties/spatial_extent/properties/xmin",
+          "type": "number",
+          "title": "The Xmin Schema",
+          "default": 0.0,
+          "examples": [
+            -81.2341289433377
+          ]
+        },
+        "xmax": {
+          "$id": "#/properties/spatial_extent/properties/xmax",
+          "type": "number",
+          "title": "The Xmax Schema",
+          "default": 0.0,
+          "examples": [
+            -29.9999999973059
+          ]
+        },
+        "ymin": {
+          "$id": "#/properties/spatial_extent/properties/ymin",
+          "type": "number",
+          "title": "The Ymin Schema",
+          "default": 0.0,
+          "examples": [
+            -39.9999999964109
+          ]
+        },
+        "ymax": {
+          "$id": "#/properties/spatial_extent/properties/ymax",
+          "type": "number",
+          "title": "The Ymax Schema",
+          "default": 0.0,
+          "examples": [
+            9.99999999910497
+          ]
+        }
+      }
+    },
+    "spatial_resolution": {
+      "$id": "#/properties/spatial_resolution",
+      "type": "object",
+      "title": "The Spatial_resolution Schema",
+      "required": [
+        "x",
+        "y"
+      ],
+      "properties": {
+        "x": {
+          "$id": "#/properties/spatial_resolution/properties/x",
+          "type": "number",
+          "title": "The X Schema",
+          "default": 0.0,
+          "examples": [
+            0.0020869942185942187
+          ]
+        },
+        "y": {
+          "$id": "#/properties/spatial_resolution/properties/y",
+          "type": "number",
+          "title": "The Y Schema",
+          "default": 0.0,
+          "examples": [
+            0.0020869942185923417
+          ]
+        }
+      }
+    },
+    "crs": {
+      "$id": "#/properties/crs",
+      "type": "object",
+      "title": "The Crs Schema",
+      "required": [
+        "proj4",
+        "wkt"
+      ],
+      "properties": {
+        "proj4": {
+          "$id": "#/properties/crs/properties/proj4",
+          "type": "string",
+          "title": "The Proj4 Schema",
+          "default": "",
+          "examples": [
+            "+proj=longlat +datum=WGS84 +no_defs "
+          ],
+          "pattern": "^(.*)$"
+        },
+        "wkt": {
+          "$id": "#/properties/crs/properties/wkt",
+          "type": "string",
+          "title": "The Wkt Schema",
+          "default": "",
+          "examples": [
+            "GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]]"
+          ],
+          "pattern": "^(.*)$"
+        }
+      }
+    },
+    "timeline": {
+      "$id": "#/properties/timeline",
+      "type": "array",
+      "title": "The Timeline Schema",
+      "items": {
+        "$id": "#/properties/timeline/items",
+        "type": "string",
+        "title": "The Items Schema",
+        "default": "",
+        "examples": [
+          "2000-02-18",
+          "2018-06-26"
+        ],
+        "pattern": "^(.*)$"
+      }
+    },
+    "attributes": {
+      "$id": "#/properties/attributes",
+      "type": "array",
+      "title": "The Attributes Schema",
+      "items": {
+        "$id": "#/properties/attributes/items",
+        "type": "object",
+        "title": "The Items Schema",
+        "required": [
+          "name",
+          "description",
+          "datatype",
+          "valid_range",
+          "scale_factor",
+          "missing_value"
+        ],
+        "properties": {
+          "name": {
+            "$id": "#/properties/attributes/items/properties/name",
+            "type": "string",
+            "title": "The Name Schema",
+            "default": "",
+            "examples": [
+              "mir"
+            ],
+            "pattern": "^(.*)$"
+          },
+          "description": {
+            "$id": "#/properties/attributes/items/properties/description",
+            "type": "string",
+            "title": "The Description Schema",
+            "default": "",
+            "examples": [
+              "250m 16 days MIR reflectance (Surface Reflectance Band 7)"
+            ],
+            "pattern": "^(.*)$"
+          },
+          "datatype": {
+            "$id": "#/properties/attributes/items/properties/datatype",
+            "type": "string",
+            "title": "The Datatype Schema",
+            "default": "",
+            "examples": [
+              "int16"
+            ],
+            "pattern": "^(.*)$"
+          },
+          "valid_range": {
+            "$id": "#/properties/attributes/items/properties/valid_range",
+            "type": "object",
+            "title": "The Valid_range Schema",
+            "required": [
+              "min",
+              "max"
+            ],
+            "properties": {
+              "min": {
+                "$id": "#/properties/attributes/items/properties/valid_range/properties/min",
+                "type": "integer",
+                "title": "The Min Schema",
+                "default": 0,
+                "examples": [
+                  0
+                ]
+              },
+              "max": {
+                "$id": "#/properties/attributes/items/properties/valid_range/properties/max",
+                "type": "integer",
+                "title": "The Max Schema",
+                "default": 0,
+                "examples": [
+                  10000
+                ]
+              }
+            }
+          },
+          "scale_factor": {
+            "$id": "#/properties/attributes/items/properties/scale_factor",
+            "type": "number",
+            "title": "The Scale_factor Schema",
+            "default": 0.0,
+            "examples": [
+              0.0001
+            ]
+          },
+          "missing_value": {
+            "$id": "#/properties/attributes/items/properties/missing_value",
+            "type": "integer",
+            "title": "The Missing_value Schema",
+            "default": 0,
+            "examples": [
+              -1000
+            ]
+          }
+        }
+      }
+    }
+  }
+}
