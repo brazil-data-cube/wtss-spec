@@ -8,7 +8,7 @@ info:
 
         There are free and open source implementations based on this specification:
 
-        - [wtss-server](https://github.com/brazil-data-cube/wtss-server): is a WTSS web server implemented in Python.
+        - [wtss-server](https://github.com/brazil-data-cube/wtss): is a WTSS web server implemented in Python.
 
         - [wtss.py](https://github.com/brazil-data-cube/wtss.py): is a client API for Python.
 
@@ -24,6 +24,7 @@ info:
         url: https://opensource.org/licenses/MIT
 
     version: '0.7.0'
+
 servers:
     - url: 'http://www.esensing.dpi.inpe.br/wtss'
       description: Production server
