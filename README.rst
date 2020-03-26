@@ -203,7 +203,9 @@ The result of ``time_series`` is a JSON document such as:
                 "coverage": "mod13q1",
                 "attributes": [ "red", "nir" ],
                 "longitude": -54,
-                "latitude": -5
+                "latitude": -5,
+                "start_date": "2000-02-18",
+                "end_date": "2000-03-21"
             }
         }
 
