@@ -1,428 +1,332 @@
 openapi: 3.0.0
 info:
-  description: >
-    Web Time Series Service is a lightweight web service for handling time series data from remote sensing imagery.
-    You can find out more about WTSS at [https://github.com/brazil-data-cube/wtss](https://github.com/brazil-data-cube/wtss)
-  version: '0.7.0'
-  title: Web Time Series Service
-  contact:
-    name: Example
-    email: example@example.com
-  license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
+    title: Web Time Series Service
+
+    description: >
+        **W**eb **T**ime **S**eries **S**ervice (WTSS) is a lightweight web service for handling time series data from remote sensing imagery. Given a location and a time interval you can retrieve the according time series as a JSON array of numbers.
+
+
+        There are free and open source implementations based on this specification:
+
+        - [wtss-server](https://github.com/brazil-data-cube/wtss-server): is a WTSS web server implemented in Python.
+
+        - [wtss.py](https://github.com/brazil-data-cube/wtss.py): is a client API for Python.
+
+        - [wtss](https://github.com/e-sensing/wtss): is a client API for R.
+
+    contact:
+        name: WTSS Specification
+        url: https://gitter.im/brazil-data-cube/community#
+        email: brazildatacube@dpi.inpe.br
+
+    license:
+        name: MIT
+        url: https://opensource.org/licenses/MIT
+
+    version: '0.7.0'
 servers:
-  - url: 'http://www.esensing.dpi.inpe.br/wtss'
-    description: Production server
-  - url: 'http://www.dev.esensing.dpi.inpe.br/wtss'
-    description: Development server
+    - url: 'http://www.esensing.dpi.inpe.br/wtss'
+      description: Production server
+
+    - url: 'http://www.dev.esensing.dpi.inpe.br/wtss'
+      description: Development server
 paths:
-  /adm/providers/stac:
-    get:
-      summary: List STAC Providers
-      description: Retrieve list of STAC providers.
-        In order to access this resource, you must have Admin Rights with scope xx
-      responses:
-        '200':
-          description: Array of Providers Name
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Providers'
-        '401':
-          $ref: '#/components/schemas/Unauthorized'
-        '403':
-          $ref: '#/components/schemas/Forbidden'
-    post:
-      summary: Insert STAC providers into WTSS Scope
-      description: Insert a new one STAC provider to the WTSS application.
-        Once created, you must define which of the collections will be served
-        through WTSS application
-      requestBody:
-        description: The required parameters are listed below.
-        required: True
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProviderForm'
-            examples:
-              stacdpi:
-                $ref: '#/components/examples/stacdpi'
-      responses:
-        '200':
-          description: STAC Provider Created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Provider'
-        '401':
-          $ref: '#/components/schemas/Unauthorized'
-        '403':
-          $ref: '#/components/schemas/Forbidden'
-  /adm/providers/stac/{stacId}:
-    put:
-      summary: Update STAC provider into WTSS Scope
-      parameters:
-        - in: path
-          name: stacId
-          required: true
-          type: integer
-          minimum: 1
-          description: STAC id
-      requestBody:
-        description: The required parameters are listed below.
-        required: True
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ProviderForm'
-      responses:
-        '200':
-          description: STAC Provider Updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Provider'
-        '401':
-          $ref: '#/components/schemas/Unauthorized'
-        '403':
-          $ref: '#/components/schemas/Forbidden'
-    delete:
-      summary: Delete a STAC  provider from WTSS Scope
-      parameters:
-        - in: path
-          name: stacId
-          required: true
-          type: integer
-          minimum: 1
-          description: STAC id
-      responses:
-        '200':
-          description: STAC Provider Deleted
-        '401':
-          $ref: '#/components/schemas/Unauthorized'
-        '403':
-          $ref: '#/components/schemas/Forbidden'
-  /list_coverages:
-    get:
-      summary: List Coverages
-      description: Retrieve list of available coverages
-      responses:
-        '200':
-          description: Array of coverages
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CoverageList'
+    /list_coverages:
+        get:
+            summary: List Coverages
+            description: Retrieves the list of all available coverages in the service.
+                         The names returned by this operation can be used in describe_coverage and time-sries operations.
+            responses:
+                '200':
+                    description: JSON document with the name of coverages offered by the service.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CoverageListType'
 
-  /describe_coverage:
-    get:
-      summary: Describe Coverage
-      description: Retrieves coverage description
-      responses:
-        '200':
-          description: Coverage found.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CoverageDescription'
-        '404':
-          description: Coverage not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIError'
-      parameters:
-        - in: query
-          name: name
-          required: true
-          description: Identifier (name) of specific coverage
-          schema:
-            type: string
+    /describe_coverage:
+        get:
+            summary: Describe Coverage
+            description: Retrieves the metadata for a given coverage identified by its name.
+                         The response includes the coverage range in the spatial and temporal dimensions.
+            responses:
+                '200':
+                    description: A JSON document with the coverage metadata.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CoverageDescriptionType'
+                '404':
+                    description: Coverage not found.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ExceptionType'
+            parameters:
+                - name: name
+                  in: query
+                  description: Coverage name.
+                  required: true
+                  schema:
+                      type: string
 
-  /time_series:
-    get:
-      summary: Time Series
-      description: >
-        Retrieves coverage timeseries. The property `result` contains keys
-        `attributes` with grouped values and `timeline` represents the affected times. The property `query` represents the same query attributes.
-      parameters:
-        - in: query
-          name: coverage
-          type: string
-          description: >
-            Identifier (name) of specific coverage
-          required: true
-          schema:
-            type: string
-        - in: query
-          name: attributes
-          type: string
-          description: >
-            List of coverage attributes delimited by comma. i.e `attributes=ndvi,evi`
-          required: true
-          schema:
-            type: string
-        - in: query
-          name: latitude
-          description: >
-            Latitude coordinate. i.e `latitude=-12`
-          required: true
-          schema:
-            type: number
-        - in: query
-          name: longitude
-          description: >
-            Longitude coordinate. i.e `longitude=-54`
-          schema:
-            type: number
-        - in: query
-          name: start_date
-          description: >
-            Start date. i.e `start_date=2015-01-01`
-          schema:
-            type: string
-        - in: query
-          name: end_date
-          description: End date. i.e `end_date=2017-12-31`
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Time series found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CoverageTimeSeries'
-        '400':
-          description: Missing required arguments
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIError'
-        '404':
-          description: Coverage not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APIError'
+    /time_series:
+        get:
+            summary: Time Series
+            description: >
+                Retrieves the values associated to the time series for a set of coverage attributes at a given location.
+                The property `result` contains keys `attributes` with grouped values and `timeline` represents the affected times.
+                The property `query` represents the original query parameters sent by the client.
+            parameters:
+                - name: coverage
+                  in: query
+                  description: >
+                    Identifier (name) of specific coverage.
+                  required: true
+                  schema:
+                      type: string
+
+                - name: attributes
+                  in: query
+                  description: >
+                      List of coverage attributes delimited by comma. i.e `attributes=ndvi,evi`.
+                  required: true
+                  schema:
+                      type: string
+
+                - name: latitude
+                  in: query
+                  description: >
+                    Latitude coordinate. i.e `latitude=-12`.
+                  required: true
+                  schema:
+                      type: number
+
+                - name: longitude
+                  in: query
+                  description: >
+                      Longitude coordinate. i.e `longitude=-54`.
+                  schema:
+                      type: number
+
+                - name: start_date
+                  in: query
+                  description: >
+                      Start date. i.e `start_date=2015-01-01`.
+                  schema:
+                      type: string
+
+                - name: end_date
+                  in: query
+                  description: >
+                    End date. i.e `end_date=2017-12-31`.
+                  schema:
+                      type: string
+            responses:
+                '200':
+                    description: Time series found.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/TimeSeriesType'
+
+                '400':
+                    description: Missing required arguments.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ExceptionType'
+
+                '404':
+                    description: Coverage not found.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ExceptionType'
+
 components:
-  examples:
-    stacdpi:
-      summary: STAC DPI
-      value:
-        uri: 'http://cbers1.dpi.inpe.br:5050/stac'
-        prefix: bdc
-
-  schemas:
-    ProviderForm:
-      type: object
-      required:
-        - uri
-        - prefix
-      properties:
-        uri:
-          description: Path to the STAC provider
-          schema:
-            type: string
-        prefix:
-          description: STAC prefix used to consume collections
-          type: string
-
-    Provider:
-      allOf:
-        - $ref: '#/components/schemas/ProviderForm'
-        - type: object
-          required:
-            - id
-          properties:
-            id:
-              description: STAC Internal id
-              type: number
-
-    Providers:
-      type: array
-      description: List of Providers
-      items:
-        $ref: '#/components/schemas/Provider'
-
-    CoverageList:
-      type: object
-      properties:
-        coverages:
-          type: array
-          items:
-            type: string
-
-    CoverageTimeSeries:
-      type: object
-      properties:
-        result:
-          type: object
-          properties:
-            attributes:
-              type: array
-              items:
-                type: object
-                properties:
-                  attribute:
-                    type: string
-                  values:
+    schemas:
+        CoverageListType:
+            title: A document with the list of coverage names.
+            type: object
+            properties:
+                coverages:
                     type: array
                     items:
-                      type: number
-            timeline:
-              type: array
-              items:
-                type: string
-            coordinates:
-              type: object
-              properties:
-                longitude:
-                  type: number
-                latitude:
-                  type: number
-                col:
-                  type: integer
-                row:
-                  type: integer
-        query:
-          type: object
-          properties:
-            coverage:
-              type: string
-            attributes:
-              type: array
-              items:
-                type: string
-            longitude:
-              type: number
-            latitude:
-              type: number
-            start_date:
-              type: string
-            end_date:
-              type: string
-    Dimension:
-      type: object
-      required:
-        - name
-      properties:
-        name:
-          type: string
-        min_idx:
-          type: number
-        max_idx:
-          type: number
-      xml:
-        name: Dimension
-    SpatialExtent:
-      type: object
-      properties:
-        xmin:
-          type: number
-        xmax:
-          type: number
-        ymin:
-          type: number
-        ymax:
-          type: number
-    SpatialResolution:
-      type: object
-      properties:
-        x:
-          type: number
-        y:
-          type: number
-    CRS:
-      type: object
-      properties:
-        proj4:
-          type: string
-        wkt:
-          type: string
-    Attribute:
-      type: object
-      required:
-        - name
-        - datatype
-        - valid_range
-        - scale_factor
-        - missing_value
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        datatype:
-          type: string
-        valid_range:
-          type: object
-          properties:
-            min:
-              type: number
-            max:
-              type: number
-        scale_factor:
-          type: number
-        missing_value:
-          type: number
-    CoverageDescription:
-      type: object
-      required:
-        - name
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        detail:
-          type: string
-        dimensions:
-          type: object
-          properties:
-            x:
-              $ref: '#/components/schemas/Dimension'
-            y:
-              $ref: '#/components/schemas/Dimension'
-            t:
-              $ref: '#/components/schemas/Dimension'
-        spatial_extent:
-          $ref: '#/components/schemas/SpatialExtent'
-        spatial_resolution:
-          $ref: '#/components/schemas/SpatialResolution'
-        crs:
-          $ref: '#/components/schemas/CRS'
-        timeline:
-          type: array
-          items:
-            type: string
-        attributes:
-          type: array
-          items:
-            $ref: '#/components/schemas/Attribute'
-      xml:
-        name: CoverageDescription
+                        type: string
 
-    ### HTTP Errors ###
-    APIError:
-      type: object
-      description: 'Used to describe the error occurred on Request operation'
-      properties:
-        code: integer
-        message: string
+        DimensionType:
+            title: Descriptor of a given dimension.
+            type: object
+            properties:
+                name:
+                    type: string
+                min_idx:
+                    type: number
+                max_idx:
+                    type: number
+            required:
+                - name
 
-    Unauthorized:
-      description: Not authenticated
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/APIError'
+        SpatialExtentType:
+            title: The spatial extent of the coverage.
+            type: object
+            properties:
+                xmin:
+                    type: number
+                xmax:
+                    type: number
+                ymin:
+                    type: number
+                ymax:
+                    type: number
 
-    Forbidden:
-      description: Token provided does not have required scope permission
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/APIError'
-    ###
+        SpatialResolutionType:
+            title: The spatial resolution of the coverage cells.
+            type: object
+            properties:
+                x:
+                    type: number
+                y:
+                    type: number
+
+        CRSType:
+            title: Coordinate reference system.
+            type: object
+            properties:
+                proj4:
+                    type: string
+                wkt:
+                    type: string
+
+        AttributeType:
+            title: Used to describe coverage attributes.
+            type: object
+            properties:
+                name:
+                    type: string
+                description:
+                    type: string
+                datatype:
+                    type: string
+                valid_range:
+                    type: object
+                    properties:
+                        min:
+                            type: number
+                        max:
+                            type: number
+                scale_factor:
+                    type: number
+                missing_value:
+                    type: number
+            required:
+                - name
+                - datatype
+                - valid_range
+                - scale_factor
+                - missing_value
+
+        CoverageDescriptionType:
+            title: The coverage metadata document.
+            type: object
+            properties:
+                name:
+                    type: string
+                description:
+                    type: string
+                detail:
+                    type: string
+                dimensions:
+                    type: object
+                    properties:
+                        x:
+                            $ref: '#/components/schemas/DimensionType'
+                        y:
+                            $ref: '#/components/schemas/DimensionType'
+                        t:
+                            $ref: '#/components/schemas/DimensionType'
+                spatial_extent:
+                    $ref: '#/components/schemas/SpatialExtentType'
+                spatial_resolution:
+                    $ref: '#/components/schemas/SpatialResolutionType'
+                crs:
+                    $ref: '#/components/schemas/CRSType'
+                timeline:
+                    type: array
+                    items:
+                        type: string
+                attributes:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/AttributeType'
+            required:
+                - name
+
+        TimeSeriesType:
+            title: Time series document.
+            type: object
+            properties:
+                result:
+                    type: object
+                    properties:
+                        attributes:
+                            type: array
+                            items:
+                                type: object
+                                properties:
+                                    attribute:
+                                        type: string
+                                    values:
+                                        type: array
+                                        items:
+                                            type: number
+                        timeline:
+                            type: array
+                            items:
+                                type: string
+                        coordinates:
+                            type: object
+                            properties:
+                                longitude:
+                                    type: number
+                                latitude:
+                                    type: number
+                                col:
+                                    type: integer
+                                row:
+                                    type: integer
+
+                query:
+                    title: The original query of the client.
+                    type: object
+                    properties:
+                        coverage:
+                            type: string
+                        attributes:
+                            type: array
+                            items:
+                                type: string
+                        longitude:
+                            type: number
+                        latitude:
+                            type: number
+                        start_date:
+                            type: string
+                        end_date:
+                            type: string
+
+        ExceptionType:
+            title: The type of exceptions raised by the service.
+            type: object
+            description: >
+                Used to describe the error occurred on Request operation.
+            properties:
+                code:
+                    type: integer
+                message:
+                    type: string
+
+externalDocs:
+    description: Web Time Series Service specification repository.
+    url: https://github.com/brazil-data-cube/wtss-spec
