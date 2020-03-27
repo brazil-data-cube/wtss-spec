@@ -24,6 +24,12 @@ info:
         url: https://opensource.org/licenses/MIT
 
     version: '0.7.0'
+
+    x-logo:
+        url: '../img/bdc-logo.png'
+        altText: Brazil Data Cube
+        href: 'https://github.com/brazil-data-cube'
+
 servers:
     - url: 'http://www.esensing.dpi.inpe.br/wtss'
       description: Production server
