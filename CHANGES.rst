@@ -19,4 +19,4 @@ Released 2020-03-27
 - Basic OpenAPI 3.0 specification.
 - Documentation build system based on `ReDoc <https://github.com/Redocly/redoc>`_.
 - Source code versioning based on `Semantic Versioning 2.0.0 <https://semver.org/>`_.
-- License: `MIT <https://github.com/brazil-data-cube/wtss-spec/blob/b-0.7/LICENSE>`_.
+- License: `MIT <https://github.com/brazil-data-cube/wtss-spec/blob/master/LICENSE>`_.
