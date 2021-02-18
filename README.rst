@@ -22,9 +22,9 @@ Web Time Series Service - Specification
         :target: https://github.com/brazil-data-cube/wtss-spec/releases
         :alt: Release
 
-.. image:: https://badges.gitter.im/brazil-data-cube/community.png
-        :target: https://gitter.im/brazil-data-cube/community#
-        :alt: Join the chat
+.. image:: https://img.shields.io/discord/689541907621085198?logo=discord&logoColor=ffffff&color=7389D8
+        :target: https://discord.com/channels/689541907621085198#
+        :alt: Join us at Discord
 
 
 About
