@@ -77,7 +77,7 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-        - $ref: '#/components/parameters/coverage'
+        - $ref: '#/components/parameters/coverage_name'
 
   /time_series:
     get:
@@ -301,6 +301,14 @@ components:
         - code
 
   parameters:
+    coverage_name:
+      name: name
+      in: query
+      description: Coverage name.
+      required: true
+      schema:
+        type: string
+
     coverage:
       name: coverage
       in: query
@@ -332,6 +340,7 @@ components:
       in: query
       description: >
         Longitude coordinate. i.e `longitude=-54`.
+      required: true
       schema:
         type: number
 
