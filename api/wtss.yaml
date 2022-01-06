@@ -1,338 +1,418 @@
 openapi: 3.0.0
 info:
-    title: Web Time Series Service
+  title: Web Time Series Service
 
-    description: >
-        Web Time Series Service (WTSS) is a lightweight web service for handling time series data from remote sensing imagery. Given a location and a time interval you can retrieve the according time series as a JSON array of numbers.
+  description: >
+    Web Time Series Service (WTSS) is a lightweight web service for handling time series data from remote sensing imagery. Given a location and a time interval you can retrieve the according time series as a JSON array of numbers.
 
 
-        There are free and open source implementations based on this specification:
+    There are free and open source implementations based on this specification:
 
-        - [wtss-server](https://github.com/brazil-data-cube/wtss): is a WTSS web server implemented in Python.
+    - [wtss-server](https://github.com/brazil-data-cube/wtss): is a WTSS web server implemented in Python.
 
-        - [wtss.py](https://github.com/brazil-data-cube/wtss.py): is a client API for Python.
+    - [wtss.py](https://github.com/brazil-data-cube/wtss.py): is a client API for Python.
 
-        - [wtss](https://github.com/e-sensing/wtss): is a client API for R.
+    - [rwtss](https://github.com/e-sensing/rwtss): is a client API for R.
 
-    contact:
-        name: WTSS Specification
-        url: https://gitter.im/brazil-data-cube/community#
-        email: brazildatacube@dpi.inpe.br
+    - [wtss-qgis](https://github.com/brazil-data-cube/wtss-qgis): is a implementation of client for QGIS
 
-    license:
-        name: MIT
-        url: https://opensource.org/licenses/MIT
+  contact:
+    name: Brazil Data Cube Team
+    url: 'https://discord.com/channels/689541907621085198#'
+    email: brazildatacube@inpe.br
 
-    version: '0.8.0'
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
 
-    x-logo:
-        url: '../img/bdc-logo.png'
-        altText: Brazil Data Cube
-        href: 'https://github.com/brazil-data-cube'
+  version: '1.0.0'
+
+  x-logo:
+    url: '../img/bdc-logo.png'
+    altText: Brazil Data Cube
+    href: 'https://github.com/brazil-data-cube'
 
 servers:
-    - url: 'http://www.esensing.dpi.inpe.br/wtss'
-      description: Production server
+  - url: 'https://brazildatacube.dpi.inpe.br/wtss'
+    description: Production server
 
-    - url: 'http://www.dev.esensing.dpi.inpe.br/wtss'
-      description: Development server
+  - url: 'https://brazildatacube.dpi.inpe.br/dev/wtss'
+    description: Development server
+
 paths:
-    /list_coverages:
-        get:
-            summary: List Coverages
-            description: Retrieves the list of all available coverages in the service.
-                         The names returned by this operation can be used in describe_coverage and time-sries operations.
-            responses:
-                '200':
-                    description: JSON document with the name of coverages offered by the service.
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/CoverageListType'
+  /:
+    get:
+      tags:
+        - Root
+      summary: Root Entry Point
+      description: Returns the root entry point to brief service information such version and description.
+      operationId: getRoot
+      responses:
+        '200':
+          $ref: '#/components/responses/Root'
 
-    /describe_coverage:
-        get:
-            summary: Describe Coverage
-            description: Retrieves the metadata for a given coverage identified by its name.
-                         The response includes the coverage range in the spatial and temporal dimensions.
-            responses:
-                '200':
-                    description: A JSON document with the coverage metadata.
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/CoverageDescriptionType'
-                '404':
-                    description: Coverage not found.
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ExceptionType'
-            parameters:
-                - name: name
-                  in: query
-                  description: Coverage name.
-                  required: true
-                  schema:
-                      type: string
+  /list_coverages:
+    get:
+      summary: List Coverages
+      description: Retrieves the list of all available coverages in the service.
+        The names returned by this operation can be used in describe_coverage and time-sries operations.
+      responses:
+        '200':
+          $ref: '#/components/responses/ListCoverages'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
-    /time_series:
-        get:
-            summary: Time Series
-            description: >
-                Retrieves the values associated to the time series for a set of coverage attributes at a given location.
-                The property `result` contains keys `attributes` with grouped values and `timeline` represents the affected times.
-                The property `query` represents the original query parameters sent by the client.
-            parameters:
-                - name: coverage
-                  in: query
-                  description: >
-                    Identifier (name) of specific coverage.
-                  required: true
-                  schema:
-                      type: string
+  /describe_coverage:
+    get:
+      summary: Describe Coverage
+      description: Retrieves the metadata for a given coverage identified by its name.
+        The response includes the coverage range in the spatial and temporal dimensions.
+      responses:
+        '200':
+          $ref: '#/components/responses/DescribeCoverage'
+        '400':
+          $ref: '#/components/responses/InvalidParameter'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+        - $ref: '#/components/parameters/coverage_name'
 
-                - name: attributes
-                  in: query
-                  description: >
-                      List of coverage attributes delimited by comma. i.e `attributes=ndvi,evi`.
-                  required: true
-                  schema:
-                      type: string
-
-                - name: latitude
-                  in: query
-                  description: >
-                    Latitude coordinate. i.e `latitude=-12`.
-                  required: true
-                  schema:
-                      type: number
-
-                - name: longitude
-                  in: query
-                  description: >
-                      Longitude coordinate. i.e `longitude=-54`.
-                  schema:
-                      type: number
-
-                - name: start_date
-                  in: query
-                  description: >
-                      Start date. i.e `start_date=2015-01-01`.
-                  schema:
-                      type: string
-
-                - name: end_date
-                  in: query
-                  description: >
-                    End date. i.e `end_date=2017-12-31`.
-                  schema:
-                      type: string
-            responses:
-                '200':
-                    description: Time series found.
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/TimeSeriesType'
-
-                '400':
-                    description: Missing required arguments.
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ExceptionType'
-
-                '404':
-                    description: Coverage not found.
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ExceptionType'
+  /time_series:
+    get:
+      summary: Time Series
+      description: >
+        Retrieves the values associated to the time series for a set of coverage attributes at a given location.
+        The property `result` contains keys `attributes` with grouped values and `timeline` represents the affected times.
+        The property `query` represents the original query parameters sent by the client.
+      parameters:
+        - $ref: '#/components/parameters/coverage'
+        - $ref: '#/components/parameters/attributes'
+        - $ref: '#/components/parameters/latitude'
+        - $ref: '#/components/parameters/longitude'
+        - $ref: '#/components/parameters/start_date'
+        - $ref: '#/components/parameters/end_date'
+      responses:
+        '200':
+          $ref: '#/components/responses/TimeSeries'
+        '400':
+          $ref: '#/components/responses/InvalidParameter'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
 components:
-    schemas:
-        CoverageListType:
-            title: A document with the list of coverage names.
-            type: object
-            properties:
-                coverages:
+  schemas:
+    RootType:
+      title: A document with service version and description.
+      type: object
+      properties:
+        wtss_version:
+          type: string
+        description:
+          type: string
+
+      required:
+        - wtss_version
+        - description
+
+    CoverageListType:
+      title: A document with the list of coverage names.
+      type: object
+      properties:
+        coverages:
+          type: array
+          items:
+            type: string
+
+    DimensionType:
+      title: Descriptor of a given dimension.
+      type: object
+      properties:
+        name:
+          type: string
+        min_idx:
+          type: number
+        max_idx:
+          type: number
+      required:
+        - name
+
+    SpatialExtentType:
+      title: The spatial extent of the coverage.
+      type: object
+      properties:
+        xmin:
+          type: number
+        xmax:
+          type: number
+        ymin:
+          type: number
+        ymax:
+          type: number
+
+    SpatialResolutionType:
+      title: The spatial resolution of the coverage cells.
+      type: object
+      properties:
+        x:
+          type: number
+        y:
+          type: number
+
+    CRSType:
+      title: Coordinate reference system.
+      type: object
+      properties:
+        proj4:
+          type: string
+        wkt:
+          type: string
+
+    AttributeType:
+      title: Used to describe coverage attributes.
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        datatype:
+          type: string
+        valid_range:
+          type: object
+          properties:
+            min:
+              type: number
+            max:
+              type: number
+        scale_factor:
+          type: number
+        missing_value:
+          type: number
+      required:
+        - name
+        - datatype
+        - valid_range
+        - scale_factor
+        - missing_value
+
+    CoverageDescriptionType:
+      title: The coverage metadata document.
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        detail:
+          type: string
+        dimensions:
+          type: object
+          properties:
+            x:
+              $ref: '#/components/schemas/DimensionType'
+            y:
+              $ref: '#/components/schemas/DimensionType'
+            t:
+              $ref: '#/components/schemas/DimensionType'
+        spatial_extent:
+          $ref: '#/components/schemas/SpatialExtentType'
+        spatial_resolution:
+          $ref: '#/components/schemas/SpatialResolutionType'
+        crs:
+          $ref: '#/components/schemas/CRSType'
+        timeline:
+          type: array
+          items:
+            type: string
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttributeType'
+      required:
+        - name
+
+    TimeSeriesType:
+      title: Time series document.
+      type: object
+      properties:
+        result:
+          type: object
+          properties:
+            attributes:
+              type: array
+              items:
+                type: object
+                properties:
+                  attribute:
+                    type: string
+                  values:
                     type: array
                     items:
-                        type: string
+                      type: number
+            timeline:
+              type: array
+              items:
+                type: string
+            coordinates:
+              type: object
+              properties:
+                longitude:
+                  type: number
+                latitude:
+                  type: number
+                col:
+                  type: integer
+                row:
+                  type: integer
 
-        DimensionType:
-            title: Descriptor of a given dimension.
-            type: object
-            properties:
-                name:
-                    type: string
-                min_idx:
-                    type: number
-                max_idx:
-                    type: number
-            required:
-                - name
+        query:
+          title: The original query of the client.
+          type: object
+          properties:
+            coverage:
+              type: string
+            attributes:
+              type: array
+              items:
+                type: string
+            longitude:
+              type: number
+            latitude:
+              type: number
+            start_date:
+              type: string
+            end_date:
+              type: string
 
-        SpatialExtentType:
-            title: The spatial extent of the coverage.
-            type: object
-            properties:
-                xmin:
-                    type: number
-                xmax:
-                    type: number
-                ymin:
-                    type: number
-                ymax:
-                    type: number
+    ExceptionType:
+      title: Exception raised by the service
+      description: 'Information about the exception: an error code plus an optional description.'
+      type: object
+      properties:
+        code:
+          type: string
+        description:
+          type: string
+      required:
+        - code
 
-        SpatialResolutionType:
-            title: The spatial resolution of the coverage cells.
-            type: object
-            properties:
-                x:
-                    type: number
-                y:
-                    type: number
+  parameters:
+    coverage_name:
+      name: name
+      in: query
+      description: Coverage name.
+      required: true
+      schema:
+        type: string
 
-        CRSType:
-            title: Coordinate reference system.
-            type: object
-            properties:
-                proj4:
-                    type: string
-                wkt:
-                    type: string
+    coverage:
+      name: coverage
+      in: query
+      description: Coverage name.
+      required: true
+      schema:
+        type: string
 
-        AttributeType:
-            title: Used to describe coverage attributes.
-            type: object
-            properties:
-                name:
-                    type: string
-                description:
-                    type: string
-                datatype:
-                    type: string
-                valid_range:
-                    type: object
-                    properties:
-                        min:
-                            type: number
-                        max:
-                            type: number
-                scale_factor:
-                    type: number
-                missing_value:
-                    type: number
-            required:
-                - name
-                - datatype
-                - valid_range
-                - scale_factor
-                - missing_value
+    attributes:
+      name: attributes
+      in: query
+      description: >
+        List of coverage attributes delimited by comma. i.e `attributes=ndvi,evi`.
+      required: true
+      schema:
+        type: string
 
-        CoverageDescriptionType:
-            title: The coverage metadata document.
-            type: object
-            properties:
-                name:
-                    type: string
-                description:
-                    type: string
-                detail:
-                    type: string
-                dimensions:
-                    type: object
-                    properties:
-                        x:
-                            $ref: '#/components/schemas/DimensionType'
-                        y:
-                            $ref: '#/components/schemas/DimensionType'
-                        t:
-                            $ref: '#/components/schemas/DimensionType'
-                spatial_extent:
-                    $ref: '#/components/schemas/SpatialExtentType'
-                spatial_resolution:
-                    $ref: '#/components/schemas/SpatialResolutionType'
-                crs:
-                    $ref: '#/components/schemas/CRSType'
-                timeline:
-                    type: array
-                    items:
-                        type: string
-                attributes:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/AttributeType'
-            required:
-                - name
+    latitude:
+      name: latitude
+      in: query
+      description: >
+        Latitude coordinate. i.e `latitude=-12`.
+      required: true
+      schema:
+        type: number
 
-        TimeSeriesType:
-            title: Time series document.
-            type: object
-            properties:
-                result:
-                    type: object
-                    properties:
-                        attributes:
-                            type: array
-                            items:
-                                type: object
-                                properties:
-                                    attribute:
-                                        type: string
-                                    values:
-                                        type: array
-                                        items:
-                                            type: number
-                        timeline:
-                            type: array
-                            items:
-                                type: string
-                        coordinates:
-                            type: object
-                            properties:
-                                longitude:
-                                    type: number
-                                latitude:
-                                    type: number
-                                col:
-                                    type: integer
-                                row:
-                                    type: integer
+    longitude:
+      name: longitude
+      in: query
+      description: >
+        Longitude coordinate. i.e `longitude=-54`.
+      required: true
+      schema:
+        type: number
 
-                query:
-                    title: The original query of the client.
-                    type: object
-                    properties:
-                        coverage:
-                            type: string
-                        attributes:
-                            type: array
-                            items:
-                                type: string
-                        longitude:
-                            type: number
-                        latitude:
-                            type: number
-                        start_date:
-                            type: string
-                        end_date:
-                            type: string
+    start_date:
+      name: start_date
+      in: query
+      description: >
+        Start date. i.e `start_date=2015-01-01`.
+      schema:
+        type: string
 
-        ExceptionType:
-            title: The type of exceptions raised by the service.
-            type: object
-            description: >
-                Used to describe the error occurred on Request operation.
-            properties:
-                code:
-                    type: integer
-                message:
-                    type: string
+    end_date:
+      name: end_date
+      in: query
+      description: >
+        End date. i.e `end_date=2017-12-31`.
+      schema:
+        type: string
+
+  responses:
+    Root:
+      description: 'The landing page show information about Web Time Series Service'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RootType'
+
+    ListCoverages:
+      description: 'JSON document with the name of coverages offered by the service.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CoverageListType'
+
+    DescribeCoverage:
+      description: 'A JSON document with the coverage metadata.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CoverageDescriptionType'
+
+    TimeSeries:
+      description: 'A JSON document with the coverage time series.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TimeSeriesType'
+
+    InvalidParameter:
+      description: 'A query parameter has an invalid value.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ExceptionType'
+
+    NotFound:
+      description: 'The requested URI was not found.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ExceptionType'
+
+    ServerError:
+      description: 'A JSON document informing that an error has occurred in the system.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ExceptionType'
+        text/html:
+          schema:
+            type: string
 
 externalDocs:
-    description: Web Time Series Service specification repository.
-    url: https://github.com/brazil-data-cube/wtss-spec
+  description: Web Time Series Service specification repository.
+  url: https://github.com/brazil-data-cube/wtss-spec
