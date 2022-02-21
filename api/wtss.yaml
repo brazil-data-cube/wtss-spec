@@ -1,11 +1,23 @@
 openapi: 3.0.1
 info:
   version: '2.0'
-  title: WTSS
-  description: |
-    Web Time Series Service 2.0
+  title: Web Time Series Service
+  description: >
+        Web Time Series Service (WTSS) is a lightweight web service for handling time series data from remote sensing imagery. Given a location and a time interval you can retrieve the according time series as a JSON array of numbers.
+
+        There are free and open source implementations based on this specification:
+
+        - [wtss-server](https://github.com/brazil-data-cube/wtss-server): is a WTSS web server implemented in Python.
+
+        - [wtss.py](https://github.com/brazil-data-cube/wtss.py): is a client API for Python.
+
+        - [wtss](https://github.com/e-sensing/wtss): is a client API for R.
 servers:
-  - url: 'localhost:5000'
+    - url: 'https://brazildatacube.dpi.inpe.br/wtss'
+      description: Production server
+
+    - url: 'http://brazildatacube.dpi.inpe.br/dev/wtss'
+      description: Development server
 paths:
   /:
     get:
@@ -39,7 +51,9 @@ paths:
   '/collections/{collection_id}':
     get:
       operationId: describeCollection
-      summary: describe the feature collection with id `collection_id`
+      summary: The collection name `collection_id`
+      parameters:
+        - $ref: '#/components/parameters/collection_id'
       tags:
         - Capabilities
       responses:
@@ -73,14 +87,17 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
+        - $ref: '#/components/parameters/collection_id'
         - $ref: '#/components/parameters/point'
         - $ref: '#/components/parameters/bands'
         - $ref: '#/components/parameters/datetime'
     post:
-      operationId: getTimeSeries
+      operationId: getTimeSeriesPost
       summary: fetch time series
       tags:
         - TimeSeries
+      parameters:
+        - $ref: '#/components/parameters/collection_id'
       requestBody:
         content:
           application/json:
@@ -185,7 +202,8 @@ components:
       properties:
         collections:
           type: array
-          items: string
+          items:
+            type: string
     timeseries:
       type: object
       required:
@@ -193,7 +211,8 @@ components:
       properties:
         values:
           type: array
-          items: numbers
+          items:
+            type: number
     extent:
       type: object
       description: >-
@@ -321,12 +340,13 @@ components:
     searchBody:
       description: The search criteria
       type: object
+
       allOf:
-        - $ref '#/components/schemas/datetimeFilter'
-        - $ref '#/components/schemas/bandsFilter'
-        - $ref '#/components/schemas/intersectsFilter'
-        - $ref '#/components/schemas/limitFilter'
-        - $ref '#/components/schemas/pageFilter'
+        - $ref: '#/components/schemas/datetimeFilter'
+        - $ref: '#/components/schemas/bandsFilter'
+        - $ref: '#/components/schemas/intersectsFilter'
+        - $ref: '#/components/schemas/limitFilter'
+        - $ref: '#/components/schemas/pageFilter'
     numberMatched:
       description: |-
         The number of features of the feature type that match the selection
@@ -436,7 +456,8 @@ components:
       example: '2018-02-12T00:00:00Z/2018-03-18T12:31:12Z'
     band:
       type: array
-      items: string
+      items:
+        type: string
       description: An array of select bands
     wtss_version:
       type: string
