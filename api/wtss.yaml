@@ -48,12 +48,12 @@ paths:
                 $ref: '#/components/schemas/collections'
         '500':
           $ref: '#/components/responses/ServerError'
-  '/collections/{collection_id}':
+  '/collections/{collectionId}':
     get:
       operationId: describeCollection
-      summary: The collection name `collection_id`
+      summary: The collection name `collectionId`
       parameters:
-        - $ref: '#/components/parameters/collection_id'
+        - $ref: '#/components/parameters/collectionId'
       tags:
         - Capabilities
       responses:
@@ -63,11 +63,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/collection'
+        '400':
+          $ref: '#/components/responses/InvalidParameter'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/ServerError'
-  '/collections/{collection_id}/timeseries':
+  '/collections/{collectionId}/timeseries':
     get:
       operationId: getTimeSeries
       summary: fetch time series
@@ -87,8 +89,8 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-        - $ref: '#/components/parameters/collection_id'
-        - $ref: '#/components/parameters/point'
+        - $ref: '#/components/parameters/collectionId'
+        - $ref: '#/components/parameters/geom'
         - $ref: '#/components/parameters/bands'
         - $ref: '#/components/parameters/datetime'
     post:
@@ -97,7 +99,7 @@ paths:
       tags:
         - TimeSeries
       parameters:
-        - $ref: '#/components/parameters/collection_id'
+        - $ref: '#/components/parameters/collectionId'
       requestBody:
         content:
           application/json:
@@ -118,16 +120,14 @@ paths:
           $ref: '#/components/responses/ServerError'
 components:
   parameters:
-    point:
-      name: point
+    geom:
+      name: geom
+      description: >-
+        The GeoJSON representation to retrieve time series for the given location.
       in: query
       required: true
       schema:
-        minItems: 2
-        maxItems: 2
-        type: array
-        items:
-          type: number
+        $ref: '#/components/schemas/geom'
       style: form
       explode: false
     datetime:
@@ -168,20 +168,49 @@ components:
     bands:
       name: bands
       in: query
-      required: false
+      description: A List of band names of a Collection.
+      required: true
       schema:
         type: array
         items:
           type: string
       explode: false
-    collection_id:
-      name: collection_id
+    collectionId:
+      name: collectionId
       in: path
       description: local identifier of a collection
       required: true
       schema:
         type: string
   schemas:
+    landing:
+      type: object
+      description: >-
+        The index url resource of WTSS server.
+      properties:
+        wtss_version:
+          $ref: '#/components/schemas/wtss_version'
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/link'
+    link:
+      type: object
+      description: >-
+        Describes a relationship with another link entity.
+      properties:
+        href:
+          description: Define the actual link in the format of an URL. Relative and absolute links are both allowed.
+          type: string
+        rel:
+          description: The Relationship between the current document and the linked documents
+          type: string
+        type:
+          description: The application media type of the document.
+          type: string
+        title:
+          description: A human readable title to be used in rendered displays of the link.
+          type: string
     collection:
       type: object
       required:
@@ -195,6 +224,52 @@ components:
           $ref: '#/components/schemas/wtss_version'
         extent:
           $ref: '#/components/schemas/extent'
+        bands:
+          $ref: '#/components/schemas/bands'
+    bands:
+      type: array
+      items:
+        $ref: '#/components/schemas/band'
+      minItems: 1
+    band:
+      title: The collection band metadata.
+      type: object
+      required:
+        - name
+        - datatype
+        - valid_range
+        - scale_factor
+        - spatial_resolution
+        - nodata
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        datatype:
+          type: string
+        spatial_resolution:
+          type: object
+          title: The spatial resolution of the coverage cells.
+          properties:
+            x:
+              type: number
+            y:
+              type: number
+        valid_range:
+          type: object
+          properties:
+            min:
+              type: number
+            max:
+              type: number
+        scale_factor:
+          type: number
+        scale_factor_offset:
+          title: Applied for Landsat Collection 2
+          type: number
+        nodata:
+          type: number
     collections:
       type: object
       required:
@@ -209,10 +284,39 @@ components:
       required:
         - values
       properties:
-        values:
+        bands:
           type: array
           items:
-            type: number
+            type: object
+            required:
+              - name
+            properties:
+              name:
+                type: string
+              values:
+                type: array
+                minItems: 1
+                items:
+                  type: array
+                  items:
+                    type: number
+                  minItems: 1
+              mean:
+                type: array
+                items:
+                  type: number
+              median:
+                type: array
+                items:
+                  type: number
+              sd:
+                type: array
+                items:
+                  type: number
+        timeline:
+          type: array
+          items:
+            $ref: '#/components/schemas/datetime'
     extent:
       type: object
       description: >-
@@ -340,90 +444,10 @@ components:
     searchBody:
       description: The search criteria
       type: object
-
       allOf:
         - $ref: '#/components/schemas/datetimeFilter'
         - $ref: '#/components/schemas/bandsFilter'
         - $ref: '#/components/schemas/intersectsFilter'
-        - $ref: '#/components/schemas/limitFilter'
-        - $ref: '#/components/schemas/pageFilter'
-    numberMatched:
-      description: |-
-        The number of features of the feature type that match the selection
-        parameters like `intersects`.
-      type: integer
-      minimum: 0
-      example: 127
-    numberReturned:
-      description: |-
-        The number of features in the feature collection.
-
-        A server may omit this information in a response, if the information
-        about the number of features is not known or difficult to compute.
-
-        If the value is provided, the value shall be identical to the number
-        of items in the "features" array.
-      type: integer
-      minimum: 0
-      example: 10
-    limit:
-      type: integer
-      minimum: 1
-      default: 10
-      description: The maximum number of results to return (page size). Defaults to 10
-    page:
-      type: integer
-      minimum: 1
-      default: 1
-      description: The page number of results to return. Defaults to 1
-    datetimeFilter:
-      description: An object representing a date+time based filter.
-      type: object
-      properties:
-        datetime:
-          $ref: '#/components/schemas/datetime'
-    bandsFilter:
-      description: An object representing a date+time based filter.
-      type: array
-      items:
-        type: string
-      properties:
-        datetime:
-          $ref: '#/components/schemas/band'
-    intersectsFilter:
-      type: object
-      description: Only returns items that intersect with the provided polygon.
-      properties:
-        intersects:
-          oneOf:
-            - $ref: 'https://geojson.org/schema/Point.json'
-            - $ref: 'https://geojson.org/schema/MultiPoint.json'
-            - $ref: 'https://geojson.org/schema/Polygon.json'
-            - $ref: 'https://geojson.org/schema/MultiPolygon.json'
-    limitFilter:
-      type: object
-      description: Only returns maximum number of results (page size)
-      properties:
-        limit:
-          $ref: '#/components/schemas/limit'
-    pageFilter:
-      type: object
-      description: Only returs the given page
-      properties:
-        limit:
-          $ref: '#/components/schemas/page'
-    exception:
-      type: object
-      description: >-
-        Information about the exception: an error code plus an optional
-        description.
-      required:
-        - code
-      properties:
-        code:
-          type: string
-        description:
-          type: string
     datetime:
       type: string
       description: >-
@@ -454,11 +478,56 @@ components:
 
         the extent or all relevant temporal properties.
       example: '2018-02-12T00:00:00Z/2018-03-18T12:31:12Z'
-    band:
+    datetimeFilter:
+      description: An object representing a date+time based filter.
+      type: object
+      properties:
+        datetime:
+          $ref: '#/components/schemas/datetime'
+    bandsFilter:
+      description: An object representing a date+time based filter.
       type: array
       items:
         type: string
-      description: An array of select bands
+      required:
+        - bands
+      properties:
+        bands:
+          type: array
+          minItems: 1
+          items:
+            type: string
+    geom:
+      type: object
+      oneOf:
+        - $ref: 'https://geojson.org/schema/Point.json'
+        # - $ref: 'https://geojson.org/schema/MultiPoint.json'
+        - $ref: 'https://geojson.org/schema/Polygon.json'
+        # - $ref: 'https://geojson.org/schema/MultiPolygon.json'
+    intersectsFilter:
+      type: object
+      description: Only returns items that intersect with the provided polygon.
+      required:
+        - geom
+      properties:
+        geom:
+          oneOf:
+            - $ref: 'https://geojson.org/schema/Point.json'
+            # - $ref: 'https://geojson.org/schema/MultiPoint.json'
+            - $ref: 'https://geojson.org/schema/Polygon.json'
+            # - $ref: 'https://geojson.org/schema/MultiPolygon.json'
+    exception:
+      type: object
+      description: >-
+        Information about the exception: an error code plus an optional
+        description.
+      required:
+        - code
+      properties:
+        code:
+          type: string
+        description:
+          type: string
     wtss_version:
       type: string
       description: WTSS version
@@ -483,6 +552,10 @@ components:
                 $ref: '#/components/schemas/exception'
     LandingPage:
         description: Landing Page
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/landing'
 
 externalDocs:
   description: Web Time Series Service specification repository.
