@@ -7,11 +7,11 @@ info:
 
         There are free and open source implementations based on this specification:
 
-        - [wtss-server](https://github.com/brazil-data-cube/wtss-server): is a WTSS web server implemented in Python.
+        - [wtss-server](https://github.com/brazil-data-cube/wtss-server): WTSS web server implemented in Python.
 
-        - [wtss.py](https://github.com/brazil-data-cube/wtss.py): is a client API for Python.
+        - [wtss.py](https://github.com/brazil-data-cube/wtss.py): Client API for Python.
 
-        - [wtss](https://github.com/e-sensing/wtss): is a client API for R.
+        - [wtss](https://github.com/e-sensing/wtss): Client API for R.
 servers:
     - url: 'https://brazildatacube.dpi.inpe.br/wtss'
       description: Production server
@@ -33,43 +33,8 @@ paths:
           $ref: '#/components/responses/LandingPage'
         '500':
           $ref: '#/components/responses/ServerError'
-  /collections:
-    get:
-      operationId: getCollections
-      summary: the feature collections in the dataset
-      tags:
-        - Capabilities
-      responses:
-        '200':
-          description: Get all Collections
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/collections'
-        '500':
-          $ref: '#/components/responses/ServerError'
-  '/collections/{collectionId}':
-    get:
-      operationId: describeCollection
-      summary: The collection name `collectionId`
-      parameters:
-        - $ref: '#/components/parameters/collectionId'
-      tags:
-        - Capabilities
-      responses:
-        '200':
-          description: Return a given Collection
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/collection'
-        '400':
-          $ref: '#/components/responses/InvalidParameter'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
-  '/collections/{collectionId}/timeseries':
+  '/timeseries/{collectionId}':
+  
     get:
       operationId: getTimeSeries
       summary: fetch time series
@@ -137,32 +102,23 @@ components:
       name: datetime
       in: query
       description: >-
-        Either a date-time or an interval, open or closed. Date and time
-        expressions
-
-        adhere to RFC 3339. Open intervals are expressed using double-dots.
-
-
+        Either a datetime or an open or closed range. Date and time expressions follow the RFC 3339 standard. Open ranges are expressed using double dots.
+        
         Examples:
 
-
-        * A date-time: "2018-02-12T23:20:50Z"
-
-        * A closed interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-
-        * Open intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
+        * A date-time (e.g. "2018-02-12T23:20:50Z"): In this way, the search will query data whose date is equal to the specified date.
 
 
-        Only features that have a temporal property that intersects the value of
-
-        `datetime` are selected.
+        * A closed interval (e.g. "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"): In this way, the search will query data whose date is greater than or equal to the specified start date and less than or equal to the specified end date.
 
 
-        If a feature has multiple temporal properties, it is the decision of the
+        * Open intervals (e.g. "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"): In this way, the search will query data whose date is greater than or equal to the specified start date, or data whose date is less than or equal to the specified end date.
 
-        server whether only a single temporal property is used to determine
 
-        the extent or all relevant temporal properties.
+        Only features that have a temporal property that intersects the value of datetime are selected.
+
+        If a feature has multiple temporal properties, it is the decision of the server whether only a single temporal property is used to determine the extent or all relevant temporal properties.
+        
       required: false
       schema:
         type: string
@@ -181,14 +137,41 @@ components:
     collectionId:
       name: collectionId
       in: path
-      description: local identifier of a collection
+      description: Identifier of a STAC collection
       required: true
       schema:
         type: string
     aggregation:
       name: aggregation
       in: query
-      description: The aggregation methods applied in time series values.
+      description: >-
+      
+        The aggregation methods applied in time series values.
+        
+        
+        **Function only available when the geometry is not a point!**
+
+        
+        To use this feature, the user must add the desired metrics to the array. For example:
+        
+        
+        * User wants average pixels for each date: ["mean"]
+        
+        * User wants minimum and maximum pixels for each date: ["min", "max"]
+        
+        
+        Available metrics are listed below:
+        
+        * **min:** Each array item contains the smallest pixel value for that date.
+        
+        * **max:** Each array item contains the largest pixel value for that date.
+        
+        * **mean:** Each array item contains the average pixel values for that date.
+        
+        * **median:** Each array item contains the median of the pixel values for that date.
+        
+        * **standard_deviation:** Each array item contains the standard deviation of the average pixel values for that date.
+  
       required: false
       schema:
         $ref: '#/components/schemas/aggregation'
@@ -205,6 +188,13 @@ components:
       description: Use a geospatial method to retrieve pixel intersection.
       schema:
         $ref: '#/components/schemas/operator'
+    timeline_per_pixel:
+      name: timeline_per_pixel
+      in: query
+      description: Apply the timeline for each pixel
+      schema:
+        type: boolean
+        default: false
   schemas:
     landing:
       type: object
@@ -234,74 +224,6 @@ components:
         title:
           description: A human readable title to be used in rendered displays of the link.
           type: string
-    collection:
-      type: object
-      required:
-        - name
-        - wtss_version
-        - extent
-      properties:
-        name:
-          type: string
-        wtss_version:
-          $ref: '#/components/schemas/wtss_version'
-        extent:
-          $ref: '#/components/schemas/extent'
-        attributes:
-          $ref: '#/components/schemas/attributes'
-    attributes:
-      type: array
-      items:
-        $ref: '#/components/schemas/attribute'
-      minItems: 1
-    attribute:
-      title: The collection attribute metadata.
-      type: object
-      required:
-        - name
-        - datatype
-        - valid_range
-        - scale_factor
-        - spatial_resolution
-        - nodata
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        datatype:
-          type: string
-        spatial_resolution:
-          type: object
-          title: The spatial resolution of the coverage cells.
-          properties:
-            x:
-              type: number
-            y:
-              type: number
-        valid_range:
-          type: object
-          properties:
-            min:
-              type: number
-            max:
-              type: number
-        scale_factor:
-          type: number
-        scale_factor_offset:
-          title: Applied for Landsat Collection 2
-          type: number
-        nodata:
-          type: number
-    collections:
-      type: object
-      required:
-        - collections
-      properties:
-        collections:
-          type: array
-          items:
-            type: string
     timeseries:
       type: object
       required:
@@ -336,6 +258,10 @@ components:
                       type: array
                       items:
                         type: number
+                    timeline:
+                      type: array
+                      items:
+                        type: string
               mean:
                 type: array
                 description: Display the Mean values from Series. See more in Aggregation Operator.
@@ -361,130 +287,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/datetime'
-    extent:
-      type: object
-      description: >-
-        The extent of the features in the collection. In the Core only spatial
-        and temporal
-
-        extents are specified. Extensions may add additional members to
-        represent other
-
-        extents, for example, thermal or pressure ranges.
-      properties:
-        spatial:
-          description: The spatial extent of the features in the collection.
-          type: object
-          properties:
-            bbox:
-              description: >-
-                One or more bounding boxes that describe the spatial extent of
-                the dataset.
-
-                In the Core only a single bounding box is supported. Extensions
-                may support
-
-                additional areas. If multiple areas are provided, the union of
-                the bounding
-
-                boxes describes the spatial extent.
-              type: array
-              minItems: 1
-              items:
-                description: >-
-                  Each bounding box is provided as four numbers
-
-                  * Lower left corner, coordinate axis 1
-
-                  * Lower left corner, coordinate axis 2
-
-                  * Upper right corner, coordinate axis 1
-
-                  * Upper right corner, coordinate axis 2
-
-
-                  The coordinate reference system of the values is WGS 84
-                  longitude/latitude
-
-                  (http://www.opengis.net/def/crs/OGC/1.3/CRS84) unless a
-                  different coordinate
-
-                  reference system is specified in `crs`.
-
-
-                  For WGS 84 longitude/latitude the values are in most cases the
-                  sequence of
-
-                  minimum longitude, minimum latitude, maximum longitude and
-                  maximum latitude.
-
-                  However, in cases where the box spans the antimeridian the
-                  first value
-
-                  (west-most box edge) is larger than the third value (east-most
-                  box edge).
-
-
-                  If the vertical axis is included, the third and the sixth
-                  number are
-
-                  the bottom and the top of the 3-dimensional bounding box.
-
-
-                  If a feature has multiple spatial geometry properties, it is
-                  the decision of the
-
-                  server whether only a single spatial geometry property is used
-                  to determine
-
-                  the extent or all relevant geometries.
-                type: array
-                minItems: 4
-                maxItems: 4
-                items:
-                  type: number
-                example:
-                  - -180
-                  - -90
-                  - 180
-                  - 90
-            crs:
-              description: >-
-                Coordinate reference system of the coordinates in the spatial
-                extent
-
-                (property `bbox`). The default reference system is WGS 84
-                longitude/latitude.
-
-                In the Core this is the only supported coordinate reference
-                system.
-
-                Extensions may support additional coordinate reference systems
-                and add
-
-                additional enum values.
-              type: string
-              enum:
-                - 'http://www.opengis.net/def/crs/OGC/1.3/CRS84'
-              default: 'http://www.opengis.net/def/crs/OGC/1.3/CRS84'
-          required:
-            - bbox
-        temporal:
-          description: The temporal extent of the features in the collection.
-          type: object
-          properties:
-            timeline:
-              type: array
-              minItems: 1
-              items:
-                type: string
-                format: date-time
-                nullable: false
-          required:
-            - timeline
-      required:
-        - spatial
-        - temporal
     operator:
       type: string
       enum:
@@ -523,6 +325,11 @@ components:
         - $ref: '#/components/schemas/attributesFilter'
         - $ref: '#/components/schemas/intersectsFilter'
         - $ref: '#/components/schemas/operators'
+        - type: object
+          properties: 
+            timeline_per_pixel:
+              type: boolean
+              default: false
     datetime:
       type: string
       description: >-
