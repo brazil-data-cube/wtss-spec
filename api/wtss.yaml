@@ -171,8 +171,7 @@ components:
         * **median:** Each array item contains the median of the pixel values for that date.
         
         * **standard_deviation:** Each array item contains the standard deviation of the average pixel values for that date.
-      
-      
+  
       required: false
       schema:
         $ref: '#/components/schemas/aggregation'
@@ -196,7 +195,6 @@ components:
       schema:
         type: boolean
         default: false
-        
   schemas:
     landing:
       type: object
