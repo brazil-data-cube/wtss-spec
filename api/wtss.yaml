@@ -91,8 +91,11 @@ paths:
       parameters:
         - $ref: '#/components/parameters/collectionId'
         - $ref: '#/components/parameters/geom'
-        - $ref: '#/components/parameters/bands'
+        - $ref: '#/components/parameters/attributes'
         - $ref: '#/components/parameters/datetime'
+        - $ref: '#/components/parameters/aggregation'
+        - $ref: '#/components/parameters/scale'
+        - $ref: '#/components/parameters/operator'
     post:
       operationId: getTimeSeriesPost
       summary: fetch time series
@@ -165,10 +168,10 @@ components:
         type: string
       style: form
       explode: false
-    bands:
-      name: bands
+    attributes:
+      name: attributes
       in: query
-      description: A List of band names of a Collection.
+      description: A List of attribute names of a Collection.
       required: true
       schema:
         type: array
@@ -182,6 +185,26 @@ components:
       required: true
       schema:
         type: string
+    aggregation:
+      name: aggregation
+      in: query
+      description: The aggregation methods applied in time series values.
+      required: false
+      schema:
+        $ref: '#/components/schemas/aggregation'
+    scale:
+      name: scale
+      in: query
+      description: Apply the scale factor and scale factor offset along the time series values
+      schema:
+        type: boolean
+        default: false
+    operator:
+      name: operator
+      in: query
+      description: Use a geospatial method to retrieve pixel intersection.
+      schema:
+        $ref: '#/components/schemas/operator'
   schemas:
     landing:
       type: object
@@ -224,15 +247,15 @@ components:
           $ref: '#/components/schemas/wtss_version'
         extent:
           $ref: '#/components/schemas/extent'
-        bands:
-          $ref: '#/components/schemas/bands'
-    bands:
+        attributes:
+          $ref: '#/components/schemas/attributes'
+    attributes:
       type: array
       items:
-        $ref: '#/components/schemas/band'
+        $ref: '#/components/schemas/attribute'
       minItems: 1
-    band:
-      title: The collection band metadata.
+    attribute:
+      title: The collection attribute metadata.
       type: object
       required:
         - name
@@ -284,32 +307,53 @@ components:
       required:
         - values
       properties:
-        bands:
+        attributes:
           type: array
           items:
             type: object
             required:
               - name
+              - series
             properties:
               name:
                 type: string
-              values:
+              series:
                 type: array
-                minItems: 1
                 items:
-                  type: array
-                  items:
-                    type: number
-                  minItems: 1
+                  type: object
+                  required:
+                    - latitude
+                    - longitude
+                  properties:
+                    point:
+                      type: array
+                      description: Latitude and Longitude, respectively.
+                      maxItems: 2
+                      minItems: 2
+                      items:
+                        type: number
+                    values:
+                      type: array
+                      items:
+                        type: number
               mean:
                 type: array
+                description: Display the Mean values from Series. See more in Aggregation Operator.
                 items:
                   type: number
               median:
                 type: array
                 items:
                   type: number
-              sd:
+              std:
+                type: array
+                items:
+                  type: number
+              min:
+                type: array
+                items:
+                  type: number
+              max:
                 type: array
                 items:
                   type: number
@@ -441,13 +485,44 @@ components:
       required:
         - spatial
         - temporal
-    searchBody:
-      description: The search criteria
+    operator:
+      type: string
+      enum:
+        - intersects
+        - contains
+      default: 'intersects'
+    aggregation:
+      type: array
+      items:
+        type: string
+        enum:
+          - mean
+          - median
+          - min
+          - max
+          - standard_deviation
+    operators:
       type: object
+      properties:
+        aggregation:
+          $ref: '#/components/schemas/aggregation'
+        scale:
+          type: boolean
+          default: false
+        operator:
+          $ref: '#/components/schemas/operator'
+    searchBody:
+      description: >-
+        The Parameters for Time Series Request.
+        By default, 
+        The supported values for aggregation are: `mean`, `median`, `standard_deviation`, `min` and `max`.
+      type: object
+
       allOf:
         - $ref: '#/components/schemas/datetimeFilter'
-        - $ref: '#/components/schemas/bandsFilter'
+        - $ref: '#/components/schemas/attributesFilter'
         - $ref: '#/components/schemas/intersectsFilter'
+        - $ref: '#/components/schemas/operators'
     datetime:
       type: string
       description: >-
@@ -484,15 +559,15 @@ components:
       properties:
         datetime:
           $ref: '#/components/schemas/datetime'
-    bandsFilter:
+    attributesFilter:
       description: An object representing a date+time based filter.
       type: array
       items:
         type: string
       required:
-        - bands
+        - attributes
       properties:
-        bands:
+        attributes:
           type: array
           minItems: 1
           items:
