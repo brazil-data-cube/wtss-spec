@@ -61,6 +61,7 @@ paths:
         - $ref: '#/components/parameters/aggregation'
         - $ref: '#/components/parameters/scale'
         - $ref: '#/components/parameters/operator'
+        - $ref: '#/components/parameters/timeline_per_pixel'
     post:
       operationId: getTimeSeriesPost
       summary: fetch time series
@@ -191,7 +192,17 @@ components:
     timeline_per_pixel:
       name: timeline_per_pixel
       in: query
-      description: Apply the timeline for each pixel
+      description: >-
+        **This functionality is designed for use in collections only!**
+        
+        
+        The user decides if he wants the timeline for each pixel or the aggregated timeline.
+        
+        - **(false) aggregated timeline:** A single timeline is generated for the entire polygon containing all datetimes of all pixels. Pixels that have no data at a given datetime have NoData values.
+        
+        
+        - **(true) timeline for each pixel:** Each pixel will have its timeline. Different pixels can have different timelines.
+        
       schema:
         type: boolean
         default: false
@@ -239,29 +250,31 @@ components:
             properties:
               name:
                 type: string
-              series:
+              points:
                 type: array
+                minItems: 1
                 items:
-                  type: object
-                  required:
-                    - latitude
-                    - longitude
-                  properties:
-                    point:
-                      type: array
-                      description: Latitude and Longitude, respectively.
-                      maxItems: 2
-                      minItems: 2
-                      items:
-                        type: number
-                    values:
-                      type: array
-                      items:
-                        type: number
-                    timeline:
-                      type: array
-                      items:
-                        type: string
+                  type: array
+                  minItems: 2
+                  maxItems: 2
+                  items:
+                    type: number
+              values:
+                type: array
+                minItems: 1
+                items:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: number
+              timeline:
+                type: array
+                minItems: 1
+                items:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: number
               mean:
                 type: array
                 description: Display the Mean values from Series. See more in Aggregation Operator.
