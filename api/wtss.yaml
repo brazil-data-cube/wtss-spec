@@ -33,11 +33,11 @@ paths:
           $ref: '#/components/responses/LandingPage'
         '500':
           $ref: '#/components/responses/ServerError'
-  '/timeseries/{collectionId}':
   
+  '/{collectionId}/timeseries':
     get:
-      operationId: getTimeSeries
-      summary: fetch time series
+      operationId: timeSeriesGET
+      summary: Fetch time series using GET method
       tags:
         - TimeSeries
       responses:
@@ -47,6 +47,71 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/timeseries'
+              examples:
+                timeseries_result:
+                  $ref: '#/components/examples/timeseries_result'
+        '400':
+          $ref: '#/components/responses/InvalidParameter'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+        - $ref: '#/components/parameters/collectionId'
+        - $ref: '#/components/parameters/geom'
+        - $ref: '#/components/parameters/attributes'
+        - $ref: '#/components/parameters/datetime'
+        - $ref: '#/components/parameters/applySensorScale'
+        - $ref: '#/components/parameters/pixelCollisionType'
+    post:
+      operationId: timeSeriesPOST
+      summary: Fetch time series using POST method
+      tags:
+        - TimeSeries
+      parameters:
+        - $ref: '#/components/parameters/collectionId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/searchBody_timeseries_POST'
+            examples:
+              timeseries_POST_query:
+                $ref: '#/components/examples/timeseries_POST_query'
+                  
+      responses:
+        '200':
+          description: Get a Time Series of a given Collection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/timeseries'
+              examples:
+                timeseries_result:
+                  $ref: '#/components/examples/timeseries_result'
+        '400':
+          $ref: '#/components/responses/InvalidParameter'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  
+  '/{collectionId}/summarize':
+    get:
+      operationId: timeSeriesSummarizeGET
+      summary: Gets the aggregated time series for an geometry
+      tags:
+        - Summarize
+      responses:
+        '200':
+          description: Get the area time series statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/summarized'
+              examples:
+                summarize_result:
+                  $ref: '#/components/examples/summarize_result'
         '400':
           $ref: '#/components/responses/InvalidParameter'
         '404':
@@ -59,34 +124,41 @@ paths:
         - $ref: '#/components/parameters/attributes'
         - $ref: '#/components/parameters/datetime'
         - $ref: '#/components/parameters/aggregation'
-        - $ref: '#/components/parameters/scale'
-        - $ref: '#/components/parameters/operator'
-        - $ref: '#/components/parameters/timeline_per_pixel'
+        - $ref: '#/components/parameters/applySensorScale'
+        - $ref: '#/components/parameters/pixelCollisionType'
+    
     post:
-      operationId: getTimeSeriesPost
-      summary: fetch time series
+      operationId: timeSeriesSummarizePOST
+      summary: Gets the aggregated time series for an geometry
       tags:
-        - TimeSeries
+        - Summarize
       parameters:
         - $ref: '#/components/parameters/collectionId'
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/searchBody'
+              $ref: '#/components/schemas/searchBody_summarize_POST'
+            examples:
+              timeseries_result:
+                $ref: '#/components/examples/summarize_POST_query'
       responses:
         '200':
-          description: Get a Time Series of a given Collection
+          description: Get the area time series statistics
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/timeseries'
+                $ref: '#/components/schemas/summarized'
+              examples:
+                summarize_result:
+                  $ref: '#/components/examples/summarize_result'
         '400':
           $ref: '#/components/responses/InvalidParameter'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/ServerError'
+
 components:
   parameters:
     geom:
@@ -99,6 +171,7 @@ components:
         $ref: '#/components/schemas/geom'
       style: form
       explode: false
+    
     datetime:
       name: datetime
       in: query
@@ -125,6 +198,8 @@ components:
         type: string
       style: form
       explode: false
+      example: "2018-02-12T23:20:50Z"
+    
     attributes:
       name: attributes
       in: query
@@ -135,6 +210,7 @@ components:
         items:
           type: string
       explode: false
+    
     collectionId:
       name: collectionId
       in: path
@@ -142,6 +218,7 @@ components:
       required: true
       schema:
         type: string
+    
     aggregation:
       name: aggregation
       in: query
@@ -171,41 +248,27 @@ components:
         
         * **median:** Each array item contains the median of the pixel values for that date.
         
-        * **standard_deviation:** Each array item contains the standard deviation of the average pixel values for that date.
+        * **std:** Each array item contains the standard deviation of the average pixel values for that date.
   
       required: false
       schema:
         $ref: '#/components/schemas/aggregation'
-    scale:
-      name: scale
+    
+    applySensorScale:
+      name: applySensorScale
       in: query
       description: Apply the scale factor and scale factor offset along the time series values
       schema:
         type: boolean
         default: false
-    operator:
-      name: operator
+    
+    pixelCollisionType:
+      name: pixelCollisionType
       in: query
       description: Use a geospatial method to retrieve pixel intersection.
       schema:
-        $ref: '#/components/schemas/operator'
-    timeline_per_pixel:
-      name: timeline_per_pixel
-      in: query
-      description: >-
-        **This functionality is designed for use in collections only!**
-        
-        
-        The user decides if he wants the timeline for each pixel or the aggregated timeline.
-        
-        - **(false) aggregated timeline:** A single timeline is generated for the entire polygon containing all datetimes of all pixels. Pixels that have no data at a given datetime have NoData values.
-        
-        
-        - **(true) timeline for each pixel:** Each pixel will have its timeline. Different pixels can have different timelines.
-        
-      schema:
-        type: boolean
-        default: false
+        $ref: '#/components/schemas/pixelCollisionType'
+
   schemas:
     landing:
       type: object
@@ -218,6 +281,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/link'
+    
     link:
       type: object
       description: >-
@@ -235,77 +299,137 @@ components:
         title:
           description: A human readable title to be used in rendered displays of the link.
           type: string
+    
     timeseries:
       type: object
-      required:
-        - values
       properties:
-        attributes:
+        results:
           type: array
           items:
             type: object
-            required:
-              - name
-              - series
             properties:
-              name:
+              pixel_size:
+                type: array
+                minItems: 2
+                maxItems: 2
+                items:
+                  type: number
+              pixel_center: 
+                $ref: '#/components/schemas/geom'
+              timeseries:
+                type: object
+                properties:
+                  values:
+                    type: object
+                    properties:
+                      EVI:
+                        type: array
+                        minItems: 1
+                        items:
+                          type: number
+                      NDVI:
+                        type: array
+                        minItems: 1
+                        items:
+                          type: number
+                  timeline:
+                    type: array
+                    items:
+                      type: string
+        query:
+          type: object
+          properties:
+            geom:
+              $ref: '#/components/schemas/geom'
+            request:
+              type: object
+              properties:
+                completed:
+                  type: boolean
+                  default: False
+                nextURL:
+                  type: string
+                query_offset:
+                  type: number
+    
+    summarized:
+      type: object
+      properties:
+        results:
+          type: object
+          properties:
+            values:
+              type: object
+              properties:
+                NDVI:
+                  type: object
+                  properties:
+                    mean:
+                      type: array
+                      minItems: 1
+                      items:
+                        type: number
+                    std:
+                      type: array
+                      minItems: 1
+                      items:
+                        type: number
+                EVI:
+                  type: object
+                  properties:
+                    mean:
+                      type: array
+                      minItems: 1
+                      items:
+                        type: number
+                    std:
+                      type: array
+                      minItems: 1
+                      items:
+                        type: number
+            timeline:
+              type: array
+              items:
                 type: string
-              points:
-                type: array
-                minItems: 1
-                items:
-                  type: array
-                  minItems: 2
-                  maxItems: 2
-                  items:
-                    type: number
-              values:
-                type: array
-                minItems: 1
-                items:
-                  type: array
-                  minItems: 1
-                  items:
-                    type: number
-              timeline:
-                type: array
-                minItems: 1
-                items:
-                  type: array
-                  minItems: 1
-                  items:
-                    type: number
-              mean:
-                type: array
-                description: Display the Mean values from Series. See more in Aggregation Operator.
-                items:
+        query:
+          type: object
+          properties:
+            geom:
+              $ref: '#/components/schemas/geom'
+            request:
+              type: object
+              properties:
+                completed:
+                  type: boolean
+                  default: False
+                nextURL:
+                  type: string
+                query_offset:
                   type: number
-              median:
-                type: array
-                items:
-                  type: number
-              std:
-                type: array
-                items:
-                  type: number
-              min:
-                type: array
-                items:
-                  type: number
-              max:
-                type: array
-                items:
-                  type: number
-        timeline:
-          type: array
-          items:
-            $ref: '#/components/schemas/datetime'
-    operator:
+
+    pixelCollisionType:
       type: string
       enum:
-        - intersects
-        - contains
-      default: 'intersects'
+        - center
+        - upperLeft
+        - upperRight
+        - lowerLeft
+        - lowerRight
+      default: 'center'
+      
+    pixelCollisionType_POST_query:
+      type: object
+      properties:
+        pixelCollisionType:
+          type: string
+          enum:
+            - center
+            - upperLeft
+            - upperRight
+            - lowerLeft
+            - lowerRight
+          default: 'center'
+    
     aggregation:
       type: array
       items:
@@ -315,70 +439,59 @@ components:
           - median
           - min
           - max
-          - standard_deviation
-    operators:
+          - std
+          
+    aggregation_POST_query:
       type: object
       properties:
         aggregation:
-          $ref: '#/components/schemas/aggregation'
-        scale:
+          type: array
+          items:
+            type: string
+            enum:
+              - mean
+              - median
+              - min
+              - max
+              - std
+    
+    applySensorScale_POST_query:
+      type: object
+      properties:
+        applySensorScale:
           type: boolean
           default: false
-        operator:
-          $ref: '#/components/schemas/operator'
-    searchBody:
+    
+    searchBody_timeseries_POST:
       description: >-
         The Parameters for Time Series Request.
-        By default, 
-        The supported values for aggregation are: `mean`, `median`, `standard_deviation`, `min` and `max`.
       type: object
-
       allOf:
-        - $ref: '#/components/schemas/datetimeFilter'
+        - $ref: '#/components/schemas/geomFilter'
         - $ref: '#/components/schemas/attributesFilter'
-        - $ref: '#/components/schemas/intersectsFilter'
-        - $ref: '#/components/schemas/operators'
-        - type: object
-          properties: 
-            timeline_per_pixel:
-              type: boolean
-              default: false
-    datetime:
-      type: string
+        - $ref: '#/components/schemas/datetimeFilter'
+        - $ref: '#/components/schemas/applySensorScale_POST_query'
+        - $ref: '#/components/schemas/pixelCollisionType_POST_query'
+    
+    searchBody_summarize_POST:
       description: >-
-        Either a date-time or an interval, open or closed. Date and time
-        expressions
+        The Parameters for Summarized Time Series Request.
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/geomFilter'
+        - $ref: '#/components/schemas/attributesFilter'
+        - $ref: '#/components/schemas/datetimeFilter'
+        - $ref: '#/components/schemas/aggregation_POST_query'
+        - $ref: '#/components/schemas/applySensorScale_POST_query'
+        - $ref: '#/components/schemas/pixelCollisionType_POST_query'
 
-        adhere to RFC 3339. Open intervals are expressed using double-dots.
-
-
-        Examples:
-
-
-        * A date-time: "2018-02-12T23:20:50Z"
-
-        * A closed interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
-
-        * Open intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
-
-
-        Only features that have a temporal property that intersects the value of
-
-        `datetime` are selected.
-
-
-        If a feature has multiple temporal properties, it is the decision of the
-
-        server whether only a single temporal property is used to determine
-
-        the extent or all relevant temporal properties.
-      example: '2018-02-12T00:00:00Z/2018-03-18T12:31:12Z'
     datetimeFilter:
       description: An object representing a date+time based filter.
       type: object
       properties:
         datetime:
-          $ref: '#/components/schemas/datetime'
+          type: string
+    
     attributesFilter:
       description: An object representing a date+time based filter.
       type: array
@@ -392,6 +505,7 @@ components:
           minItems: 1
           items:
             type: string
+    
     geom:
       type: object
       oneOf:
@@ -399,7 +513,8 @@ components:
         # - $ref: 'https://geojson.org/schema/MultiPoint.json'
         - $ref: 'https://geojson.org/schema/Polygon.json'
         # - $ref: 'https://geojson.org/schema/MultiPolygon.json'
-    intersectsFilter:
+    
+    geomFilter:
       type: object
       description: Only returns items that intersect with the provided polygon.
       required:
@@ -411,6 +526,7 @@ components:
             # - $ref: 'https://geojson.org/schema/MultiPoint.json'
             - $ref: 'https://geojson.org/schema/Polygon.json'
             # - $ref: 'https://geojson.org/schema/MultiPolygon.json'
+    
     exception:
       type: object
       description: >-
@@ -423,9 +539,11 @@ components:
           type: string
         description:
           type: string
+    
     wtss_version:
       type: string
       description: WTSS version
+  
   responses:
     InvalidParameter:
         description: A query parameter has an invalid value.
@@ -451,6 +569,74 @@ components:
           application/json:
             schema:
               $ref: '#/components/schemas/landing'
+
+  examples:
+    
+    timeseries_POST_query:
+      summary: Time Series POST Query Example
+      value:
+        geom: 
+          type: Point
+          coordinates: [-52.63215, -28.31698]
+        attributes: ['NDVI', 'EVI', 'RED']
+        datetime: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+        applySensorScale: true
+        pixelCollisionType: "center"
+    
+    summarize_POST_query:
+      summary: Summarize POST Query Example
+      value:
+        geom: 
+          type: Point
+          coordinates: [-52.63215, -28.31698]
+        attributes: ['NDVI', 'EVI', 'RED']
+        datetime: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+        aggregation: ['mean', 'median', 'std']
+        applySensorScale: true
+        pixelCollisionType: "center"
+        
+    timeseries_result:
+      summary: Time Series Result Example
+      value:
+        results:
+          pixel_size: [64.0001, 64.00009]
+          pixel_center:
+            type: Point
+            coordinates: [-52.63215, -28.31698]
+          timeseries:
+            values:
+              NDVI: [0.365, 0.425, 0.468, 0.563, 0.602, 0.762, 0.530]
+              EVI: [0.394, 0.563, 0.572, 0.630, 0.790, 0.860, 0.652]
+              timeline: ["2018-01-01T00:00:00Z", "2018-01-17T00:00:00Z", "2018-02-02T00:00:00Z", "2018-02-18T00:00:00Z", "..."]
+        query:
+          geom:
+            type: Point
+            coordinates: [-52.63215, -28.31698]
+          request:
+            completed: False
+            nextURL: "https://brazildatacube.dpi.inpe.br/wtss/MOD13Q1-6/timeseries?ya0gsqhy4wzvuvb4"
+            query_offset: 999
+          
+    summarize_result:
+      summary: Summarize Result Example
+      value:
+        results:
+          values:
+            NDVI:
+              mean: [0.365, 0.425, 0.468, 0.563, 0.602, 0.762, 0.530]
+              std: [0.394, 0.563, 0.572, 0.630, 0.790, 0.860, 0.652]
+            EVI:
+              mean: [0.365, 0.425, 0.468, 0.563, 0.602, 0.762, 0.530]
+              std: [0.394, 0.563, 0.572, 0.630, 0.790, 0.860, 0.652]
+          timeline: ["2018-01-01T00:00:00Z", "2018-01-17T00:00:00Z", "2018-02-02T00:00:00Z", "2018-02-18T00:00:00Z", "..."]
+        query:
+          geom:
+            type: Point
+            coordinates: [-52.63215, -28.31698]
+          request:
+            completed: False
+            nextURL: "https://brazildatacube.dpi.inpe.br/wtss/MOD13Q1-6/timeseries?ya0gsqhy4wzvuvb4"
+            query_offset: 999
 
 externalDocs:
   description: Web Time Series Service specification repository.
