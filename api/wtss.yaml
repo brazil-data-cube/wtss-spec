@@ -62,7 +62,7 @@ paths:
         - $ref: '#/components/parameters/attributes'
         - $ref: '#/components/parameters/start_date'
         - $ref: '#/components/parameters/end_date'
-        - $ref: '#/components/parameters/applySensorScale'
+        - $ref: '#/components/parameters/applyAttributeScale'
         - $ref: '#/components/parameters/pixelCollisionType'
     post:
       operationId: timeSeriesPOST
@@ -123,10 +123,10 @@ paths:
         - $ref: '#/components/parameters/collectionId'
         - $ref: '#/components/parameters/geom'
         - $ref: '#/components/parameters/attributes'
+        - $ref: '#/components/parameters/aggregations'
         - $ref: '#/components/parameters/start_date'
         - $ref: '#/components/parameters/end_date'
-        - $ref: '#/components/parameters/aggregation'
-        - $ref: '#/components/parameters/applySensorScale'
+        - $ref: '#/components/parameters/applyAttributeScale'
         - $ref: '#/components/parameters/pixelCollisionType'
     
     post:
@@ -221,8 +221,8 @@ components:
       schema:
         type: string
     
-    aggregation:
-      name: aggregation
+    aggregations:
+      name: aggregations
       in: query
       description: >-
       
@@ -252,14 +252,14 @@ components:
         
         * **std:** Each array item contains the standard deviation of the average pixel values for that date.
   
-      required: false
+      required: true
       schema:
-        $ref: '#/components/schemas/aggregation'
+        $ref: '#/components/schemas/aggregations'
     
-    applySensorScale:
-      name: applySensorScale
+    applyAttributeScale:
+      name: applyAttributeScale
       in: query
-      description: Apply the scale factor and scale factor offset along the time series values
+      description: Apply the attribute scale factor and scale factor offset along the time series values
       schema:
         type: boolean
         default: false
@@ -432,7 +432,7 @@ components:
             - lowerRight
           default: 'center'
     
-    aggregation:
+    aggregations:
       type: array
       items:
         type: string
@@ -443,10 +443,10 @@ components:
           - max
           - std
           
-    aggregation_POST_query:
+    aggregations_POST_query:
       type: object
       properties:
-        aggregation:
+        aggregations:
           type: array
           items:
             type: string
@@ -457,10 +457,10 @@ components:
               - max
               - std
     
-    applySensorScale_POST_query:
+    applyAttributeScale_POST_query:
       type: object
       properties:
-        applySensorScale:
+        applyAttributeScale:
           type: boolean
           default: false
     
@@ -473,7 +473,7 @@ components:
         - $ref: '#/components/schemas/attributesFilter'
         - $ref: '#/components/schemas/start_date_POST_query'
         - $ref: '#/components/schemas/end_date_POST_query'
-        - $ref: '#/components/schemas/applySensorScale_POST_query'
+        - $ref: '#/components/schemas/applyAttributeScale_POST_query'
         - $ref: '#/components/schemas/pixelCollisionType_POST_query'
     
     searchBody_summarize_POST:
@@ -483,10 +483,10 @@ components:
       allOf:
         - $ref: '#/components/schemas/geomFilter'
         - $ref: '#/components/schemas/attributesFilter'
+        - $ref: '#/components/schemas/aggregations_POST_query'
         - $ref: '#/components/schemas/start_date_POST_query'
         - $ref: '#/components/schemas/end_date_POST_query'
-        - $ref: '#/components/schemas/aggregation_POST_query'
-        - $ref: '#/components/schemas/applySensorScale_POST_query'
+        - $ref: '#/components/schemas/applyAttributeScale_POST_query'
         - $ref: '#/components/schemas/pixelCollisionType_POST_query'
 
     start_date_POST_query:
@@ -593,7 +593,7 @@ components:
         attributes: ['NDVI', 'EVI', 'RED']
         start_date: "2018-02-12T00:00:00Z"
         end_date: "2018-12-31T00:00:00Z"
-        applySensorScale: true
+        applyAttributeScale: true
         pixelCollisionType: "center"
     
     summarize_POST_query:
@@ -605,8 +605,8 @@ components:
         attributes: ['NDVI', 'EVI', 'RED']
         start_date: "2018-02-12T00:00:00Z"
         end_date: "2018-12-31T00:00:00Z"
-        aggregation: ['mean', 'median', 'std']
-        applySensorScale: true
+        aggregations: ['mean', 'median', 'min', 'max', 'std']
+        applyAttributeScale: true
         pixelCollisionType: "center"
         
     timeseries_result:
