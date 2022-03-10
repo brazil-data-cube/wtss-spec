@@ -60,7 +60,8 @@ paths:
         - $ref: '#/components/parameters/collectionId'
         - $ref: '#/components/parameters/geom'
         - $ref: '#/components/parameters/attributes'
-        - $ref: '#/components/parameters/datetime'
+        - $ref: '#/components/parameters/start_date'
+        - $ref: '#/components/parameters/end_date'
         - $ref: '#/components/parameters/applySensorScale'
         - $ref: '#/components/parameters/pixelCollisionType'
     post:
@@ -122,7 +123,8 @@ paths:
         - $ref: '#/components/parameters/collectionId'
         - $ref: '#/components/parameters/geom'
         - $ref: '#/components/parameters/attributes'
-        - $ref: '#/components/parameters/datetime'
+        - $ref: '#/components/parameters/start_date'
+        - $ref: '#/components/parameters/end_date'
         - $ref: '#/components/parameters/aggregation'
         - $ref: '#/components/parameters/applySensorScale'
         - $ref: '#/components/parameters/pixelCollisionType'
@@ -171,34 +173,34 @@ components:
         $ref: '#/components/schemas/geom'
       style: form
       explode: false
-    
-    datetime:
-      name: datetime
+
+    start_date:
+      name: start_date
       in: query
       description: >-
-        Either a datetime or an open or closed range. Date and time expressions follow the RFC 3339 standard. Open ranges are expressed using double dots.
+        A datetime representing a start date to use in the search. If this parameter is not defined, the search is performed without initial data.
         
-        Examples:
-
-        * A date-time (e.g. "2018-02-12T23:20:50Z"): In this way, the search will query data whose date is equal to the specified date.
-
-
-        * A closed interval (e.g. "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"): In this way, the search will query data whose date is greater than or equal to the specified start date and less than or equal to the specified end date.
-
-
-        * Open intervals (e.g. "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"): In this way, the search will query data whose date is greater than or equal to the specified start date, or data whose date is less than or equal to the specified end date.
-
-
-        Only features that have a temporal property that intersects the value of datetime are selected.
-
-        If a feature has multiple temporal properties, it is the decision of the server whether only a single temporal property is used to determine the extent or all relevant temporal properties.
-        
+        Example:  "2018-01-01T23:20:50Z"
       required: false
       schema:
         type: string
       style: form
-      explode: false
-      example: "2018-02-12T23:20:50Z"
+      explode: true
+      example: "2018-01-01T23:20:50Z"
+      
+    end_date:
+      name: end_date
+      in: query
+      description: >-
+        A datetime representing an end date to use in the search. If this parameter is not defined, the search is performed without initial data.
+        
+        Example:  "2018-12-31T23:20:50Z"
+      required: false
+      schema:
+        type: string
+      style: form
+      explode: true
+      example: "2018-12-31T23:20:50Z"
     
     attributes:
       name: attributes
@@ -469,7 +471,8 @@ components:
       allOf:
         - $ref: '#/components/schemas/geomFilter'
         - $ref: '#/components/schemas/attributesFilter'
-        - $ref: '#/components/schemas/datetimeFilter'
+        - $ref: '#/components/schemas/start_date_POST_query'
+        - $ref: '#/components/schemas/end_date_POST_query'
         - $ref: '#/components/schemas/applySensorScale_POST_query'
         - $ref: '#/components/schemas/pixelCollisionType_POST_query'
     
@@ -480,17 +483,27 @@ components:
       allOf:
         - $ref: '#/components/schemas/geomFilter'
         - $ref: '#/components/schemas/attributesFilter'
-        - $ref: '#/components/schemas/datetimeFilter'
+        - $ref: '#/components/schemas/start_date_POST_query'
+        - $ref: '#/components/schemas/end_date_POST_query'
         - $ref: '#/components/schemas/aggregation_POST_query'
         - $ref: '#/components/schemas/applySensorScale_POST_query'
         - $ref: '#/components/schemas/pixelCollisionType_POST_query'
 
-    datetimeFilter:
-      description: An object representing a date+time based filter.
+    start_date_POST_query:
+      description: start date to be used in the search
       type: object
       properties:
-        datetime:
+        start_date:
           type: string
+          format: "date-time"
+          
+    end_date_POST_query:
+      description: end date to be used in the search
+      type: object
+      properties:
+        start_date:
+          type: string
+          format: "date-time"
     
     attributesFilter:
       description: An object representing a date+time based filter.
@@ -571,7 +584,6 @@ components:
               $ref: '#/components/schemas/landing'
 
   examples:
-    
     timeseries_POST_query:
       summary: Time Series POST Query Example
       value:
@@ -579,7 +591,8 @@ components:
           type: Point
           coordinates: [-52.63215, -28.31698]
         attributes: ['NDVI', 'EVI', 'RED']
-        datetime: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+        start_date: "2018-02-12T00:00:00Z"
+        end_date: "2018-12-31T00:00:00Z"
         applySensorScale: true
         pixelCollisionType: "center"
     
@@ -590,7 +603,8 @@ components:
           type: Point
           coordinates: [-52.63215, -28.31698]
         attributes: ['NDVI', 'EVI', 'RED']
-        datetime: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+        start_date: "2018-02-12T00:00:00Z"
+        end_date: "2018-12-31T00:00:00Z"
         aggregation: ['mean', 'median', 'std']
         applySensorScale: true
         pixelCollisionType: "center"
@@ -598,16 +612,22 @@ components:
     timeseries_result:
       summary: Time Series Result Example
       value:
-        results:
-          pixel_size: [64.0001, 64.00009]
-          pixel_center:
-            type: Point
-            coordinates: [-52.63215, -28.31698]
-          timeseries:
-            values:
-              NDVI: [0.365, 0.425, 0.468, 0.563, 0.602, 0.762, 0.530]
-              EVI: [0.394, 0.563, 0.572, 0.630, 0.790, 0.860, 0.652]
+        results: [
+          {
+            pixel_size: [64.0001, 64.00009],
+            pixel_center:{
+              type: Point,
+              coordinates: [-52.63215, -28.31698]
+            },
+            timeseries:{
+              values: {
+                NDVI: [0.365, 0.425, 0.468, 0.563, 0.602, 0.762, 0.530],
+                EVI: [0.394, 0.563, 0.572, 0.630, 0.790, 0.860, 0.652]
+              },
               timeline: ["2018-01-01T00:00:00Z", "2018-01-17T00:00:00Z", "2018-02-02T00:00:00Z", "2018-02-18T00:00:00Z", "..."]
+            }
+          },
+        ]
         query:
           geom:
             type: Point
