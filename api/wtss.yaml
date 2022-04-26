@@ -37,12 +37,12 @@ paths:
   '/{collectionId}/timeseries':
     get:
       operationId: timeSeriesGET
-      summary: Fetch time series using GET method
+      summary: Fetch time series using GET method.
       tags:
         - TimeSeries
       responses:
         '200':
-          description: Get a Time Series of a given Collection
+          description: Get a Time Series of a given Collection.
           content:
             application/json:
               schema:
@@ -50,6 +50,8 @@ paths:
               examples:
                 timeseries_result:
                   $ref: '#/components/examples/timeseries_result'
+                timeseries_pagination_result:
+                  $ref: '#/components/examples/timeseries_pagination_result'
         '400':
           $ref: '#/components/responses/InvalidParameter'
         '404':
@@ -64,9 +66,10 @@ paths:
         - $ref: '#/components/parameters/end_datetime'
         - $ref: '#/components/parameters/applyAttributeScale'
         - $ref: '#/components/parameters/pixelCollisionType'
+        - $ref: '#/components/parameters/pagination'
     post:
       operationId: timeSeriesPOST
-      summary: Fetch time series using POST method
+      summary: Fetch time series using POST method.
       tags:
         - TimeSeries
       parameters:
@@ -90,6 +93,8 @@ paths:
               examples:
                 timeseries_result:
                   $ref: '#/components/examples/timeseries_result'
+                timeseries_pagination_result:
+                  $ref: '#/components/examples/timeseries_pagination_result'
         '400':
           $ref: '#/components/responses/InvalidParameter'
         '404':
@@ -100,12 +105,12 @@ paths:
   '/{collectionId}/summarize':
     get:
       operationId: timeSeriesSummarizeGET
-      summary: Gets the aggregated time series for an geometry
+      summary: Gets the aggregated time series for an geometry.
       tags:
         - Summarize
       responses:
         '200':
-          description: Get the area time series statistics
+          description: Get the area time series statistics.
           content:
             application/json:
               schema:
@@ -131,7 +136,7 @@ paths:
     
     post:
       operationId: timeSeriesSummarizePOST
-      summary: Gets the aggregated time series for an geometry
+      summary: Gets the aggregated time series for an geometry.
       tags:
         - Summarize
       parameters:
@@ -146,7 +151,7 @@ paths:
                 $ref: '#/components/examples/summarize_POST_query'
       responses:
         '200':
-          description: Get the area time series statistics
+          description: Get the area time series statistics.
           content:
             application/json:
               schema:
@@ -216,7 +221,7 @@ components:
     collectionId:
       name: collectionId
       in: path
-      description: Identifier of a STAC collection
+      description: Identifier of a STAC collection.
       required: true
       schema:
         type: string
@@ -262,10 +267,30 @@ components:
     applyAttributeScale:
       name: applyAttributeScale
       in: query
-      description: Apply the attribute scale factor and scale factor offset along the time series values
+      description: Apply the attribute scale factor and scale factor offset along the time series. values
       schema:
         type: boolean
         default: false
+        
+    pagination:
+      name: pagination
+      in: query
+      description: >-
+        Enable the server pagination with a specified datetime range.
+        
+        Available datetime ranges are listed below:
+        
+        * **6M**: Each server query will return 6 months of data.
+        
+        * **1Y**: Each server query will return 1 year of data.
+        
+        * **2Y**: Each server query will return 2 years of data.
+      required: false
+      schema:
+        type: string
+      style: form
+      explode: true
+      example: "2Y"
     
     pixelCollisionType:
       name: pixelCollisionType
@@ -296,7 +321,7 @@ components:
           description: Define the actual link in the format of an URL. Relative and absolute links are both allowed.
           type: string
         rel:
-          description: The Relationship between the current document and the linked documents
+          description: The Relationship between the current document and the linked documents.
           type: string
         type:
           description: The application media type of the document.
@@ -478,6 +503,7 @@ components:
         - $ref: '#/components/schemas/end_datetime_POST_query'
         - $ref: '#/components/schemas/applyAttributeScale_POST_query'
         - $ref: '#/components/schemas/pixelCollisionType_POST_query'
+        - $ref: '#/components/schemas/pagination_POST_query'
     
     searchBody_summarize_POST:
       description: >-
@@ -493,7 +519,7 @@ components:
         - $ref: '#/components/schemas/pixelCollisionType_POST_query'
 
     start_datetime_POST_query:
-      description: start date to be used in the search
+      description: Start date to be used in the search.
       type: object
       properties:
         start_datetime:
@@ -501,12 +527,19 @@ components:
           format: "date-time"
           
     end_datetime_POST_query:
-      description: end date to be used in the search
+      description: End date to be used in the search.
       type: object
       properties:
         start_datetime:
           type: string
           format: "date-time"
+          
+    pagination_POST_query:
+      description: Apply a page offset in the server query.
+      type: object
+      properties:
+        pagination:
+          type: string
     
     attributesFilter:
       description: An object representing a date+time based filter.
@@ -593,11 +626,12 @@ components:
         geom: 
           type: Point
           coordinates: [-52.63215, -28.31698]
-        attributes: ['NDVI', 'EVI', 'RED']
-        start_datetime: "2018-02-12T00:00:00Z"
-        end_datetime: "2018-12-31T00:00:00Z"
+        attributes: ['NDVI', 'EVI']
+        start_datetime: "2018-01-01T00:00:00Z"
+        end_datetime: "2018-02-20T00:00:00Z"
         applyAttributeScale: true
         pixelCollisionType: "center"
+        pagination: 1Y
     
     summarize_POST_query:
       summary: Summarize POST Query Example
@@ -605,15 +639,15 @@ components:
         geom: 
           type: Point
           coordinates: [-52.63215, -28.31698]
-        attributes: ['NDVI', 'EVI', 'RED']
+        attributes: ['NDVI', 'EVI']
         start_datetime: "2018-02-12T00:00:00Z"
-        end_datetime: "2018-12-31T00:00:00Z"
-        aggregations: ['mean', 'median', 'min', 'max', 'std']
+        end_datetime: "2018-02-20T00:00:00Z"
+        aggregations: ['mean', 'std']
         applyAttributeScale: true
         pixelCollisionType: "center"
         
     timeseries_result:
-      summary: Time Series Result Example
+      summary: Time Series Example
       value:
         results: [
           {
@@ -624,10 +658,10 @@ components:
             },
             timeseries:{
               values: {
-                NDVI: [0.365, 0.425, 0.468, 0.563, 0.602, 0.762, 0.530],
-                EVI: [0.394, 0.563, 0.572, 0.630, 0.790, 0.860, 0.652]
+                NDVI: [0.365, 0.425, 0.468, 0.563],
+                EVI: [0.394, 0.563, 0.572, 0.630]
               },
-              timeline: ["2018-01-01T00:00:00Z", "2018-01-17T00:00:00Z", "2018-02-02T00:00:00Z", "2018-02-18T00:00:00Z", "..."]
+              timeline: ["2018-01-01T00:00:00Z", "2018-01-17T00:00:00Z", "2018-02-02T00:00:00Z", "2018-02-18T00:00:00Z"]
             }
           },
         ]
@@ -635,31 +669,72 @@ components:
           geom:
             type: Point
             coordinates: [-52.63215, -28.31698]
-          request:
-            completed: False
-            nextURL: "https://brazildatacube.dpi.inpe.br/wtss/MOD13Q1-6/timeseries?ya0gsqhy4wzvuvb4"
-            query_offset: 999
+          attributes: ['NDVI', 'EVI']
+          start_datetime: "2018-01-01T00:00:00Z"
+          end_datetime: "2018-02-22T00:00:00Z"
+          applyAttributeScale: true
+          pixelCollisionType: "center"
           
+    timeseries_pagination_result:
+      summary: Time Series Pagination Example
+      value:
+        results: [
+          {
+            pixel_size: [64.0001, 64.00009],
+            pixel_center:{
+              type: Point,
+              coordinates: [-52.63215, -28.31698]
+            },
+            timeseries:{
+              values: {
+                NDVI: [0.8598, 0.8317, 0.8410, 0.8714, 0.6047, 0.883, 0.8636, 0.8432, 0.8726, 0.8783, 0.8791, 0.8609, 0.8646, 0.8759, 0.8625, 0.8430, 0.8709, 0.8981, 0.8824, 0.6465, 0.5303, 0.8206, 0.8706],
+                EVI: [0.8920, 0.8490, 0.8515, 0.8557, 0.8491, 0.8554, 0.8782, 0.8653, 0.8605, 0.8618, 0.8534, 0.878, 0.8648, 0.8668, 0.8729, 0.8547, 0.8555, 0.8547, 0.5077, 0.4918, 0.8595, 0.8929, 0.8929]
+              },
+              timeline: ['2017-01-01T00:00:00Z', '2017-01-17T00:00:00Z', '2017-02-02T00:00:00Z', '2017-02-18T00:00:00Z', '2017-03-06T00:00:00Z', '2017-03-22T00:00:00Z', '2017-04-07T00:00:00Z', '2017-04-23T00:00:00Z', '2017-05-09T00:00:00Z', '2017-05-25T00:00:00Z', '2017-06-10T00:00:00Z', '2017-06-26T00:00:00Z', '2017-07-12T00:00:00Z', '2017-07-28T00:00:00Z', '2017-08-13T00:00:00Z', '2017-08-29T00:00:00Z', '2017-09-14T00:00:00Z', '2017-09-30T00:00:00Z', '2017-10-16T00:00:00Z', '2017-11-01T00:00:00Z', '2017-11-17T00:00:00Z', '2017-12-03T00:00:00Z', '2017-12-19T00:00:00Z'
+              ]
+            }
+          },
+        ]
+        query:
+          geom:
+            type: Point
+            coordinates: [-52.63215, -28.31698]
+          attributes: ['NDVI', 'EVI']
+          start_datetime: "2017-01-01T00:00:00Z"
+          end_datetime: "2018-05-15T00:00:00Z"
+          applyAttributeScale: true
+          pixelCollisionType: "center"
+        pagination: [
+          {
+            page: 0,
+            start_datetime: '2018-01-01T00:00:00Z',
+            end_datetime: '2018-05-09T00:00:00Z'
+          }
+        ]
+
     summarize_result:
       summary: Summarize Result Example
       value:
         results:
           values:
             NDVI:
-              mean: [0.365, 0.425, 0.468, 0.563, 0.602, 0.762, 0.530]
-              std: [0.394, 0.563, 0.572, 0.630, 0.790, 0.860, 0.652]
+              mean: [0.365, 0.425, 0.468, 0.563]
+              std: [0.394, 0.563, 0.572, 0.630]
             EVI:
-              mean: [0.365, 0.425, 0.468, 0.563, 0.602, 0.762, 0.530]
-              std: [0.394, 0.563, 0.572, 0.630, 0.790, 0.860, 0.652]
-          timeline: ["2018-01-01T00:00:00Z", "2018-01-17T00:00:00Z", "2018-02-02T00:00:00Z", "2018-02-18T00:00:00Z", "..."]
+              mean: [0.365, 0.425, 0.468, 0.563]
+              std: [0.394, 0.563, 0.572, 0.630]
+          timeline: ["2018-01-01T00:00:00Z", "2018-01-17T00:00:00Z", "2018-02-02T00:00:00Z", "2018-02-18T00:00:00Z"]
         query:
           geom:
             type: Point
             coordinates: [-52.63215, -28.31698]
-          request:
-            completed: False
-            nextURL: "https://brazildatacube.dpi.inpe.br/wtss/MOD13Q1-6/timeseries?ya0gsqhy4wzvuvb4"
-            query_offset: 999
+          attributes: ['NDVI', 'EVI']
+          start_datetime: "2018-01-01T00:00:00Z"
+          end_datetime: "2018-02-20T00:00:00Z"
+          aggregations: ['mean', 'std']
+          applyAttributeScale: true
+          pixelCollisionType: "center"
+          
 
 externalDocs:
   description: Web Time Series Service specification repository.
