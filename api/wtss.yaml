@@ -33,7 +33,7 @@ paths:
           $ref: '#/components/responses/LandingPage'
         '500':
           $ref: '#/components/responses/ServerError'
-  
+
   '/{collectionId}/timeseries':
     get:
       operationId: timeSeriesGET
@@ -82,7 +82,7 @@ paths:
             examples:
               timeseries_POST_query:
                 $ref: '#/components/examples/timeseries_POST_query'
-                  
+
       responses:
         '200':
           description: Get a Time Series of a given Collection
@@ -101,7 +101,7 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/ServerError'
-  
+
   '/{collectionId}/summarize':
     get:
       operationId: timeSeriesSummarizeGET
@@ -133,7 +133,9 @@ paths:
         - $ref: '#/components/parameters/end_datetime'
         - $ref: '#/components/parameters/applyAttributeScale'
         - $ref: '#/components/parameters/pixelCollisionType'
-    
+        - $ref: '#/components/parameters/qa'
+        - $ref: '#/components/parameters/masked'
+
     post:
       operationId: timeSeriesSummarizePOST
       summary: Gets the aggregated time series for an geometry.
@@ -184,7 +186,7 @@ components:
       in: query
       description: >-
         A datetime representing a start date to use in the search. If this parameter is not defined, the search is performed without initial data.
-        
+
         Example:  "2018-01-01T23:20:50Z"
       required: false
       schema:
@@ -192,13 +194,13 @@ components:
       style: form
       explode: true
       example: "2018-01-01T23:20:50Z"
-      
+
     end_datetime:
       name: end_datetime
       in: query
       description: >-
         A datetime representing an end date to use in the search. If this parameter is not defined, the search is performed without initial data.
-        
+
         Example:  "2018-12-31T23:20:50Z"
       required: false
       schema:
@@ -206,7 +208,7 @@ components:
       style: form
       explode: true
       example: "2018-12-31T23:20:50Z"
-    
+
     attributes:
       name: attributes
       in: query
@@ -217,7 +219,7 @@ components:
         items:
           type: string
       explode: false
-    
+
     collectionId:
       name: collectionId
       in: path
@@ -225,45 +227,45 @@ components:
       required: true
       schema:
         type: string
-    
+
     aggregations:
       name: aggregations
       in: query
       description: >-
-      
+
         The aggregation methods applied in time series values.
-        
-        
+
+
         **Function only available when the geometry is not a point!**
 
-        
+
         To use this feature, the user must add the desired metrics to the array. For example:
-        
-        
+
+
         * User wants average pixels for each date: ["mean"]
-        
+
         * User wants minimum and maximum pixels for each date: ["min", "max"]
-        
-        
+
+
         If user do not set parameter, all aggregations will be returned
-        
-        
+
+
         Available metrics are listed below:
-        
+
         * **min:** Each array item contains the smallest pixel value for that date.
-        
+
         * **max:** Each array item contains the largest pixel value for that date.
-        
+
         * **mean:** Each array item contains the average pixel values for that date.
-        
+
         * **median:** Each array item contains the median of the pixel values for that date.
-        
+
         * **std:** Each array item contains the standard deviation of the average pixel values for that date.
-  
+
       required: false
       schema:
         $ref: '#/components/schemas/aggregations'
-    
+
     applyAttributeScale:
       name: applyAttributeScale
       in: query
@@ -271,19 +273,19 @@ components:
       schema:
         type: boolean
         default: false
-        
+
     pagination:
       name: pagination
       in: query
       description: >-
         Enable the server pagination with a specified datetime range.
-        
+
         Available datetime ranges are listed below:
-        
+
         * **6M**: Each server query will return 6 months of data.
-        
+
         * **1Y**: Each server query will return 1 year of data.
-        
+
         * **2Y**: Each server query will return 2 years of data.
       required: false
       schema:
@@ -291,13 +293,31 @@ components:
       style: form
       explode: true
       example: "2Y"
-    
+
     pixelCollisionType:
       name: pixelCollisionType
       in: query
       description: Use a geospatial method to retrieve pixel intersection.
       schema:
         $ref: '#/components/schemas/pixelCollisionType'
+
+    qa:
+      name: qa
+      in: query
+      description: Use to apply custom cloud masking over time series area.
+      schema:
+        $ref: '#/components/schemas/qa'
+
+    masked:
+      name: masked
+      in: query
+      description: >-
+        Flag to determine whether cloud masking is applied. Default is true.
+        By default, the [BDC Temporal Composed Cubes](https://brazil-data-cube.github.io/products/specifications/processing-flow.html#temporal-compositing)
+        were built using quality assessment bands with custom `clear_data` and `not_clear_data` pixels. The WTSS already uses these values in order to apply
+        cloud masking. You can customize the values specifyng property `qa`.
+      schema:
+        $ref: '#/components/schemas/qa'
 
   schemas:
     landing:
@@ -311,7 +331,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/link'
-    
+
     link:
       type: object
       description: >-
@@ -329,7 +349,7 @@ components:
         title:
           description: A human readable title to be used in rendered displays of the link.
           type: string
-    
+
     timeseries:
       type: object
       properties:
@@ -344,7 +364,7 @@ components:
                 maxItems: 2
                 items:
                   type: number
-              pixel_center: 
+              pixel_center:
                 $ref: '#/components/schemas/geom'
               timeseries:
                 type: object
@@ -381,7 +401,7 @@ components:
                   type: string
                 query_offset:
                   type: number
-    
+
     summarized:
       type: object
       properties:
@@ -446,7 +466,7 @@ components:
         - lowerLeft
         - lowerRight
       default: 'center'
-      
+
     pixelCollisionType_POST_query:
       type: object
       properties:
@@ -459,7 +479,7 @@ components:
             - lowerLeft
             - lowerRight
           default: 'center'
-    
+
     aggregations:
       type: array
       items:
@@ -470,7 +490,9 @@ components:
           - min
           - max
           - std
-          
+          - q1
+          - q3
+
     aggregations_POST_query:
       type: object
       properties:
@@ -484,14 +506,30 @@ components:
               - min
               - max
               - std
-    
+              - q1
+              - q3
+
     applyAttributeScale_POST_query:
       type: object
       properties:
         applyAttributeScale:
           type: boolean
           default: false
-    
+
+    qa:
+      type: object
+      title: Cloud Masking
+      properties:
+        name:
+          type: string
+        clear_data:
+          items:
+            type: integer
+
+    masked:
+      type: boolean
+      default: true
+
     searchBody_timeseries_POST:
       description: >-
         The Parameters for Time Series Request.
@@ -504,7 +542,9 @@ components:
         - $ref: '#/components/schemas/applyAttributeScale_POST_query'
         - $ref: '#/components/schemas/pixelCollisionType_POST_query'
         - $ref: '#/components/schemas/pagination_POST_query'
-    
+        - $ref: '#/components/schemas/qa'
+        - $ref: '#/components/schemas/masked'
+
     searchBody_summarize_POST:
       description: >-
         The Parameters for Summarized Time Series Request.
@@ -517,6 +557,8 @@ components:
         - $ref: '#/components/schemas/end_datetime_POST_query'
         - $ref: '#/components/schemas/applyAttributeScale_POST_query'
         - $ref: '#/components/schemas/pixelCollisionType_POST_query'
+        - $ref: '#/components/schemas/qa'
+        - $ref: '#/components/schemas/masked'
 
     start_datetime_POST_query:
       description: Start date to be used in the search.
@@ -525,7 +567,7 @@ components:
         start_datetime:
           type: string
           format: "date-time"
-          
+
     end_datetime_POST_query:
       description: End date to be used in the search.
       type: object
@@ -533,14 +575,14 @@ components:
         start_datetime:
           type: string
           format: "date-time"
-          
+
     pagination_POST_query:
       description: Apply a page offset in the server query.
       type: object
       properties:
         pagination:
           type: string
-    
+
     attributesFilter:
       description: An object representing a date+time based filter.
       type: array
@@ -554,15 +596,15 @@ components:
           minItems: 1
           items:
             type: string
-    
+
     geom:
       type: object
       oneOf:
         - $ref: 'https://geojson.org/schema/Point.json'
-        # - $ref: 'https://geojson.org/schema/MultiPoint.json'
         - $ref: 'https://geojson.org/schema/Polygon.json'
+        # - $ref: 'https://geojson.org/schema/MultiPoint.json'
         # - $ref: 'https://geojson.org/schema/MultiPolygon.json'
-    
+
     geomFilter:
       type: object
       description: Only returns items that intersect with the provided polygon.
@@ -570,12 +612,8 @@ components:
         - geom
       properties:
         geom:
-          oneOf:
-            - $ref: 'https://geojson.org/schema/Point.json'
-            # - $ref: 'https://geojson.org/schema/MultiPoint.json'
-            - $ref: 'https://geojson.org/schema/Polygon.json'
-            # - $ref: 'https://geojson.org/schema/MultiPolygon.json'
-    
+          $ref: '#/components/schemas/geom'
+
     exception:
       type: object
       description: >-
@@ -588,11 +626,11 @@ components:
           type: string
         description:
           type: string
-    
+
     wtss_version:
       type: string
       description: WTSS version
-  
+
   responses:
     InvalidParameter:
         description: A query parameter has an invalid value.
@@ -623,7 +661,7 @@ components:
     timeseries_POST_query:
       summary: Time Series POST Query Example
       value:
-        geom: 
+        geom:
           type: Point
           coordinates: [-52.63215, -28.31698]
         attributes: ['NDVI', 'EVI']
@@ -632,11 +670,11 @@ components:
         applyAttributeScale: true
         pixelCollisionType: "center"
         pagination: 1Y
-    
+
     summarize_POST_query:
       summary: Summarize POST Query Example
       value:
-        geom: 
+        geom:
           type: Point
           coordinates: [-52.63215, -28.31698]
         attributes: ['NDVI', 'EVI']
@@ -645,18 +683,18 @@ components:
         aggregations: ['mean', 'std']
         applyAttributeScale: true
         pixelCollisionType: "center"
-        
+
     timeseries_result:
       summary: Time Series Example
       value:
         results: [
           {
             pixel_size: [64.0001, 64.00009],
-            pixel_center:{
+            pixel_center: {
               type: Point,
               coordinates: [-52.63215, -28.31698]
             },
-            timeseries:{
+            timeseries: {
               values: {
                 NDVI: [0.365, 0.425, 0.468, 0.563],
                 EVI: [0.394, 0.563, 0.572, 0.630]
@@ -674,18 +712,18 @@ components:
           end_datetime: "2018-02-22T00:00:00Z"
           applyAttributeScale: true
           pixelCollisionType: "center"
-          
+
     timeseries_pagination_result:
       summary: Time Series Pagination Example
       value:
         results: [
           {
             pixel_size: [64.0001, 64.00009],
-            pixel_center:{
+            pixel_center: {
               type: Point,
               coordinates: [-52.63215, -28.31698]
             },
-            timeseries:{
+            timeseries: {
               values: {
                 NDVI: [0.8598, 0.8317, 0.8410, 0.8714, 0.6047, 0.883, 0.8636, 0.8432, 0.8726, 0.8783, 0.8791, 0.8609, 0.8646, 0.8759, 0.8625, 0.8430, 0.8709, 0.8981, 0.8824, 0.6465, 0.5303, 0.8206, 0.8706],
                 EVI: [0.8920, 0.8490, 0.8515, 0.8557, 0.8491, 0.8554, 0.8782, 0.8653, 0.8605, 0.8618, 0.8534, 0.878, 0.8648, 0.8668, 0.8729, 0.8547, 0.8555, 0.8547, 0.5077, 0.4918, 0.8595, 0.8929, 0.8929]
@@ -734,7 +772,7 @@ components:
           aggregations: ['mean', 'std']
           applyAttributeScale: true
           pixelCollisionType: "center"
-          
+
 
 externalDocs:
   description: Web Time Series Service specification repository.

@@ -1,0 +1,105 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://brazildatacube.dpi.inpe.br/wtss/summarize_request.json",
+  "type": "object",
+  "title": "WTSS - Summarize Time Series operation",
+  "description": "Retrieves timeseries summary data",
+  "readOnly": true,
+  "writeOnly": false,
+  "required": [
+    "geom",
+    "attributes"
+  ],
+  "properties": {
+    "attributes": {
+      "type": "array",
+      "title": "List of attributes",
+      "description": "List of attributes, delimited by comma, to retrieve time series",
+      "examples": [
+        [
+          "NDVI"
+        ],
+        [
+          "NDVI",
+          "EVI"
+        ]
+      ]
+    },
+    "geom": {
+      "type": "object",
+      "title": "GeoJSON Geometry",
+      "description": "GeoJSON geometry used to especify the point|geometry",
+      "examples": [
+        {
+          "type": "Point",
+          "coordinates": [
+            30.0,
+            10.0
+          ]
+        }
+      ]
+    },
+    "aggregations": {
+      "type": "array",
+      "title": "List of aggregation",
+      "description": "List of aggregation methods",
+      "examples": [
+        "mean",
+        "median",
+        "min",
+        "max",
+        "std",
+        "q1",
+        "q3"
+      ]
+    },
+    "start_datetime": {
+      "type": "string",
+      "title": "The start date to query",
+      "examples": [
+        "2015-01-01T00:00:00Z"
+      ]
+    },
+    "end_datetime": {
+      "type": "string",
+      "title": "The end date to query",
+      "examples": [
+        "2015-01-01T00:00:00Z"
+      ]
+    },
+    "applyAttributeScale": {
+      "type": "boolean",
+      "title": "Define if user wants to apply attribute scale",
+      "examples": [
+        "true",
+        "false"
+      ]
+    },
+    "masked": {
+      "type": "boolean",
+      "title": "Apply cloud masking",
+      "default": true
+    },
+    "qa": {
+      "type": "object",
+      "required": [
+        "name",
+        "clear_data"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "The cloud mask name"
+        },
+        "clear_data": {
+          "title": "Pixel clear data values",
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  }
+}
