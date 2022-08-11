@@ -11,6 +11,16 @@ Changes
 =======
 
 
+Version 2.0.0
+-------------
+
+- Add support of Time Series using GeoJSON
+- Add support to summarize time series area
+- Improve OpenAPI examples
+- Improve APIErrors
+- Add way to paginate time series results (Used in time series area)
+
+
 Version 0.7.0
 -------------
 
