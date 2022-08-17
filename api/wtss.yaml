@@ -279,20 +279,18 @@ components:
       in: query
       description: >-
         Enable the server pagination with a specified datetime range.
+        Follow the ISO 8601 Duration.
 
-        Available datetime ranges are listed below:
-
-        * **6M**: Each server query will return 6 months of data.
-
-        * **1Y**: Each server query will return 1 year of data.
-
-        * **2Y**: Each server query will return 2 years of data.
+        In order to specify a pagination interval, use `P<Period>` like following:
+        - `P3M`: Interval of 3 months
+        - `P1Y`: Pagination by year
+        - `P16D`: pagination by 16 days.
       required: false
       schema:
         type: string
       style: form
       explode: true
-      example: "2Y"
+      example: "P1Y"
 
     pixelCollisionType:
       name: pixelCollisionType
@@ -669,7 +667,7 @@ components:
         end_datetime: "2018-02-20T00:00:00Z"
         applyAttributeScale: true
         pixelCollisionType: "center"
-        pagination: 1Y
+        pagination: P1Y
 
     summarize_POST_query:
       summary: Summarize POST Query Example
