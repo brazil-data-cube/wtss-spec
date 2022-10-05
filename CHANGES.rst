@@ -32,10 +32,16 @@ Version 2.0.0 (2022-10-05)
 - Add way to paginate time series results (Used in time series area)
 
 
-Version 0.7.0
--------------
+Version 0.8.0 (2021-01-05)
+--------------------------
 
-Released 2020-03-27
+- Documentation review.
+
+
+
+Version 0.7.0 (2020-03-27)
+--------------------------
+
 
 - Basic OpenAPI 3.0 specification.
 - Documentation build system based on `ReDoc <https://github.com/Redocly/redoc>`_.
