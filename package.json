@@ -1,14 +1,14 @@
 {
   "name": "wtss-spec",
-  "version": "0.7.0",
+  "version": "2.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "build": "redoc-cli bundle api/wtss.yaml --output dist/index.html"
   },
   "author": "Gilberto Queiroz",
-  "license": "MIT",
+  "license": "GPLv3",
   "dependencies": {
-    "redoc-cli": "^0.9.4"
+    "redoc-cli": "0.13.7"
   }
 }

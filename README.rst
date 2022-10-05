@@ -1,16 +1,26 @@
 ..
     This file is part of Web Time Series Service Specification.
-    Copyright (C) 2019 INPE.
+    Copyright (C) 2022 INPE.
 
-    Web Time Series Service Specification is free software; you can redistribute it and/or modify it
-    under the terms of the MIT License; see LICENSE file for more details.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program. If not, see <https://www.gnu.org/licenses/gpl-3.0.html>.
 
 
 =======================================
 Web Time Series Service - Specification
 =======================================
 
-.. image:: https://img.shields.io/badge/license-MIT-green
+.. image:: https://img.shields.io/badge/License-GPLv3-blue.svg
         :target: https://github.com/brazil-data-cube/wtss-spec/blob/master/LICENSE
         :alt: Software License
 
@@ -72,7 +82,7 @@ Overview of Service Operations
 
 The ``list_coverages`` operation can be used as follow::
 
-    http://myserver/wtss/list_coverages
+    http://myserver/
 
 
 It will return a JSON document such as:
@@ -80,7 +90,24 @@ It will return a JSON document such as:
 .. code-block:: json
 
         {
-            "coverages": [ "mod09q1", "mod13q1" ]
+            "wtss_version": "2.0.0",
+            "links": [
+                {
+                    "rel": "service-docs",
+                    "title": "Documentation for WTSS",
+                    "href": "http://myserver/docs"
+                },
+                {
+                    "rel": "data",
+                    "title": "S2-SEN2COR_10_16D_STK-1",
+                    "href": "http://myserver/S2-SEN2COR_10_16D_STK-1"
+                },
+                {
+                    "rel": "data",
+                    "title": "CB4_64_16D_STK-1",
+                    "href": "http://myserver/CB4_64_16D_STK-1"
+                }
+            ]
         }
 
 
@@ -89,7 +116,7 @@ It will return a JSON document such as:
 
 If you need the metadata of a given coverage you can use the ``describe_coverage`` operation as follow::
 
-    http://myserver/wtss/describe_coverage?name=mod13q1
+    http://myserver/<CollectionId>
 
 
 The result of ``describe_coverage`` operation is a JSON document such as:
@@ -97,72 +124,58 @@ The result of ``describe_coverage`` operation is a JSON document such as:
 .. code-block:: json
 
         {
-            "name": "mod13q1",
-            "description": "Surface Reflectance 8-Day L3 Global 250m",
-            "detail": "https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mod09q1",
-            "dimensions": {
-                "x": {
-                    "name": "col_id",
-                    "min_idx": 0,
-                    "max_idx": 172799
+            "name": "S2-SEN2COR_10_16D_STK",
+            "version": 1,
+            "fullname": "S2-SEN2COR_10_16D_STK-1",
+            "description": "This datacube was generated with all available surface reflectance images processed using Sen2cor (ilumination corrections on). The data is provided with 10 meters of spatial resolution, reprojected and cropped to BDC_SM grid, considering a temporal compositing function of 16 days using the best pixel approach (Stack).",
+            "title": "Sentinel-2 - MSI - Sen2cor - Cube Stack 16 days - v001",
+            "timeline": [
+                "2020-12-18",
+                "2020-12-02",
+                "2020-11-16"
+            ],
+            "bands": [
+                {
+                    "name": "B01",
+                    "common_name": "coastal",
+                    "scale": 0.0001,
+                    "nodata": -9999.0,
+                    "data_type": "int16",
+                    "resolution_x": 10.0,
+                    "resolution_y": 10.0,
+                    "min_value": 0.0,
+                    "max_value": 10000.0
                 },
-                "y": {
-                    "name": "row_id",
-                    "min_idx": 0,
-                    "max_idx": 86399
+                {
+                    "name": "B02",
+                    "common_name": "blue",
+                    "scale": 0.0001,
+                    "nodata": -9999.0,
+                    "data_type": "int16",
+                    "resolution_x": 10.0,
+                    "resolution_y": 10.0,
+                    "min_value": 0.0,
+                    "max_value": 10000.0
                 },
-                "t": {
-                    "name": "time_id",
-                    "min_idx": 0,
-                    "max_idx": 3
+                {
+                    "name": "B03",
+                    "common_name": "green",
+                    "scale": 0.0001,
+                    "nodata": -9999.0,
+                    "data_type": "int16",
+                    "resolution_x": 10.0,
+                    "resolution_y": 10.0,
+                    "min_value": 0.0,
+                    "max_value": 10000.0
                 }
-            },
-            "attributes": [{
-                "name": "red",
-                "description": "250m Surface Reflectance Band 1 (620–670 nm)",
-                "datatype": "int16",
-                "valid_range": {
-                    "min": -100,
-                    "max": 16000
-                },
-                "scale_factor": 0.0001,
-                "missing_value": -28672
-            }, {
-                "name": "nir",
-                "description": "250m Surface Reflectance Band 2 (841–876 nm)",
-                "datatype": "int16",
-                "valid_range": {
-                    "min": -100,
-                    "max": 16000
-                },
-                "scale_factor": 0.0001,
-                "missing_value": -28672
-            }, {
-                "name": "quality",
-                "description": "250m Reflectance Band Quality",
-                "datatype": "uint16",
-                "valid_range": {
-                    "min": 0,
-                    "max": 32767
-                },
-                "scale_factor": 1,
-                "missing_value": 65535
-            }],
-            "spatial_extent": {
-                "xmin": -180.0,
-                "ymin": -90.0,
-                "xmax": 180.0,
-                "ymax": 90.0
-            },
-            "spatial_resolution": {
-                "x": 0.00208334,
-                "y": 0.00208334
-            },
-            "crs": {
-                "proj4": "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs",
-                "wkt": "GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.01745329251994328,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]]"
-            },
-            "timeline": [ "2000-02-18", "2000-03-05", "2000-03-21" ]
+            ],
+            "extent": {"type": "Polygon", "coordinates": []},
+            "bdc:crs": "+proj=aea +lat_0=-12 +lon_0=-54 +lat_1=-2 +lat_2=-22 +x_0=5000000 +y_0=10000000 +ellps=GRS80 +units=m +no_defs ",
+            "grs_name": "BDC_SM",
+            "raster_size": {
+                "x": 16806,
+                "y": 10986
+            }
         }
 
 
@@ -171,7 +184,46 @@ The result of ``describe_coverage`` operation is a JSON document such as:
 
 You can retrieve the time series for a given location through the  ``time_series``::
 
-    http://myserver/wtss/time_series?coverage=mod13q1&attributes=red,nir&longitude=-54.0&latitude=-5.0&start_date=2000-02-18&end_date=2000-03-21
+    http://myserver/S2-SEN2COR_10_16D_STK-1/timeseries
+
+With body:
+
+.. code-block:: json
+
+    {
+        "attributes": [
+            "NDVI"
+        ],
+        "start_datetime": "2017-01-01T00:00:00Z",
+        "end_datetime": "2017-01-16T23:00:00Z",
+        "geom": {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [
+                        -54.0,
+                        -12.0
+                    ],
+                    [
+                        -54.0,
+                        -11.99
+                    ],
+                    [
+                        -53.99,
+                        -11.99
+                    ],
+                    [
+                        -53.99,
+                        -11.99
+                    ],
+                    [
+                        -54.0,
+                        -12.0
+                    ]
+                ]
+            ]
+        }
+    }
 
 
 The result of ``time_series`` is a JSON document such as:
@@ -180,32 +232,62 @@ The result of ``time_series`` is a JSON document such as:
 
         {
             "result": {
-                "attributes":  [
+                [
                     {
-                        "attribute": "red",
-                        "values": [ 1243, 2222, 722 ]
-                    },
-                    {
-                        "attribute": "nir",
-                        "values": [ 3040, 3621, 1949 ]
+                        "pixel_center": {
+                            "type": "Point",
+                            "coordinates": [
+                                -53.99998107263968,
+                                -11.989973727535231
+                            ]
+                        },
+                        "time_series": {
+                            "timeline": [
+                                "2017-01-01",
+                                "2017-01-17"
+                            ],
+                            "values": {
+                                "NDVI": [
+                                    7919,
+                                    8457
+                                ]
+                            }
+                        }
                     }
-                ],
-                "timeline": [ "2000-02-18", "2000-03-05", "2000-03-21" ],
-                "coordinates": {
-                    "longitude": -53.998273633285685,
-                    "latitude": -5.001041666214564,
-                    "col": 60579,
-                    "row": 45600
-                }
-
+                ]
             },
             "query": {
-                "coverage": "mod13q1",
+                "collectionId": "S2-SEN2COR_10_16D_STK-1",
                 "attributes": [ "red", "nir" ],
-                "longitude": -54,
-                "latitude": -5,
-                "start_date": "2000-02-18",
-                "end_date": "2000-03-21"
+                "geom": {
+                    "type": "Polygon",
+                    "coordinates": [
+                        [
+                            [
+                                -54.0,
+                                -12.0
+                            ],
+                            [
+                                -54.0,
+                                -11.99
+                            ],
+                            [
+                                -53.99,
+                                -11.99
+                            ],
+                            [
+                                -53.99,
+                                -11.99
+                            ],
+                            [
+                                -54.0,
+                                -12.0
+                            ]
+                        ]
+                    ]
+                },
+                "start_datetime": "2017-01-01T00:00:00Z",
+                "end_datetime": "2017-01-16T23:00:00Z",
             }
         }
 
@@ -244,14 +326,16 @@ For Python developers, you can serve the HTMl with:
 
 .. code-block:: shell
 
-        python3.7 -m http.server 8080 --directory dist
+        python3 -m http.server 8080 --directory dist
 
 
 License
 =======
 
 .. admonition::
-    Copyright (C) 2019 INPE.
+    Copyright (C) 2022 INPE.
 
-    Web Time Series Service is free software; you can redistribute it and/or modify it
-    under the terms of the MIT License; see LICENSE file for more details.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.

@@ -1,0 +1,147 @@
+{
+  "definitions": {
+    "aggregation": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://brazildatacube.dpi.inpe.br/wtss/time_series_response.json",
+  "type": "object",
+  "title": "The Time series root schema",
+  "required": [
+    "results",
+    "query"
+  ],
+  "properties": {
+    "results": {
+      "type": "object",
+      "title": "The Result Schema",
+      "required": [
+        "values",
+        "timeline"
+      ],
+      "properties": {
+        "values": {
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "std": {
+                "$ref": "#/definitions/aggregation"
+              },
+              "min": {
+                "$ref": "#/definitions/aggregation"
+              },
+              "max": {
+                "$ref": "#/definitions/aggregation"
+              },
+              "mean": {
+                "$ref": "#/definitions/aggregation"
+              },
+              "median": {
+                "$ref": "#/definitions/aggregation"
+              },
+              "q1": {
+                "$ref": "#/definitions/aggregation"
+              },
+              "q3": {
+                "$ref": "#/definitions/aggregation"
+              }
+            }
+          }
+        },
+        "timeline": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "datetime"
+          }
+        }
+      }
+    },
+    "query": {
+      "type": "object",
+      "title": "The Query Schema",
+      "required": [
+        "collectionId",
+        "attributes",
+        "geom"
+      ],
+      "properties": {
+        "collectionId": {
+          "type": "string",
+          "title": "The Coverage Schema",
+          "default": "",
+          "examples": [
+            "MOD13Q1"
+          ],
+          "pattern": "^(.*)$"
+        },
+        "attributes": {
+          "type": "array",
+          "title": "The Attributes Schema",
+          "items": {
+            "type": "string",
+            "title": "The Items Schema",
+            "default": "",
+            "examples": [
+              "ndvi",
+              "evi"
+            ],
+            "pattern": "^(.*)$"
+          }
+        },
+        "geom": {
+          "type": "object"
+        },
+        "start_datetime": {
+          "type": "string",
+          "title": "The Start_date Schema",
+          "default": "",
+          "examples": [
+            "2015-01-01T00:00:00Z"
+          ],
+          "pattern": "^(.*)$"
+        },
+        "end_datetime": {
+          "type": "string",
+          "title": "The End_date Schema",
+          "default": "",
+          "examples": [
+            "2017-12-31T00:00:00Z"
+          ],
+          "pattern": "^(.*)$"
+        },
+        "aggregations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "masked": {
+          "type": "boolean"
+        },
+        "qa": {
+          "type": "object",
+          "required": [
+            "name",
+            "clear_data"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "clear_data": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

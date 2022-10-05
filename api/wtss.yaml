@@ -1,75 +1,60 @@
-openapi: 3.0.0
+openapi: 3.0.1
 info:
+  version: '2.0'
   title: Web Time Series Service
-
-  description: >
-    Web Time Series Service (WTSS) is a lightweight web service for handling time series data from remote sensing imagery. Given a location and a time interval you can retrieve the according time series as a JSON array of numbers.
-
-
-    There are free and open source implementations based on this specification:
-
-    - [wtss-server](https://github.com/brazil-data-cube/wtss): is a WTSS web server implemented in Python.
-
-    - [wtss.py](https://github.com/brazil-data-cube/wtss.py): is a client API for Python.
-
-    - [rwtss](https://github.com/e-sensing/rwtss): is a client API for R.
-
-    - [wtss-qgis](https://github.com/brazil-data-cube/wtss-qgis): is a implementation of client for QGIS
-
-  contact:
-    name: Brazil Data Cube Team
-    url: 'https://discord.com/channels/689541907621085198#'
-    email: brazildatacube@inpe.br
-
   license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
+    name: "GPL v3"
+    url: "https://www.gnu.org/licenses/gpl-3.0.txt"
+  description: >
+        Web Time Series Service (WTSS) is a lightweight web service for handling time series data from remote sensing imagery. Given a location and a time interval you can retrieve the according time series as a JSON array of numbers.
 
-  version: '1.0.0'
+        There are free and open source implementations based on this specification:
 
-  x-logo:
-    url: '../img/bdc-logo.png'
-    altText: Brazil Data Cube
-    href: 'https://github.com/brazil-data-cube'
+        - [wtss-server](https://github.com/brazil-data-cube/wtss-server): WTSS web server implemented in Python.
 
+        - [wtss.py](https://github.com/brazil-data-cube/wtss.py): Client API for Python.
+
+        - [wtss](https://github.com/e-sensing/wtss): Client API for R.
 servers:
-  - url: 'https://brazildatacube.dpi.inpe.br/wtss'
-    description: Production server
+    - url: 'https://brazildatacube.dpi.inpe.br/wtss'
+      description: Production server
 
-  - url: 'https://brazildatacube.dpi.inpe.br/dev/wtss'
-    description: Development server
-
+    - url: 'http://brazildatacube.dpi.inpe.br/dev/wtss'
+      description: Development server
 paths:
   /:
     get:
       tags:
-        - Root
-      summary: Root Entry Point
-      description: Returns the root entry point to brief service information such version and description.
-      operationId: getRoot
+        - Capabilities
+      summary: landing page
+      description: |-
+        The landing page provides links to the API definition, the conformance
+        statements and to the feature collections in this dataset.
+      operationId: getLandingPage
       responses:
         '200':
-          $ref: '#/components/responses/Root'
-
-  /list_coverages:
-    get:
-      summary: List Coverages
-      description: Retrieves the list of all available coverages in the service.
-        The names returned by this operation can be used in describe_coverage and time-sries operations.
-      responses:
-        '200':
-          $ref: '#/components/responses/ListCoverages'
+          $ref: '#/components/responses/LandingPage'
         '500':
           $ref: '#/components/responses/ServerError'
 
-  /describe_coverage:
+  '/{collectionId}/timeseries':
     get:
-      summary: Describe Coverage
-      description: Retrieves the metadata for a given coverage identified by its name.
-        The response includes the coverage range in the spatial and temporal dimensions.
+      operationId: timeSeriesGET
+      summary: Fetch time series using GET method.
+      tags:
+        - TimeSeries
       responses:
         '200':
-          $ref: '#/components/responses/DescribeCoverage'
+          description: Get a Time Series of a given Collection.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/timeseries'
+              examples:
+                timeseries_result:
+                  $ref: '#/components/examples/timeseries_result'
+                timeseries_pagination_result:
+                  $ref: '#/components/examples/timeseries_pagination_result'
         '400':
           $ref: '#/components/responses/InvalidParameter'
         '404':
@@ -77,25 +62,108 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
       parameters:
-        - $ref: '#/components/parameters/coverage_name'
-
-  /time_series:
-    get:
-      summary: Time Series
-      description: >
-        Retrieves the values associated to the time series for a set of coverage attributes at a given location.
-        The property `result` contains keys `attributes` with grouped values and `timeline` represents the affected times.
-        The property `query` represents the original query parameters sent by the client.
-      parameters:
-        - $ref: '#/components/parameters/coverage'
+        - $ref: '#/components/parameters/collectionId'
+        - $ref: '#/components/parameters/geom'
         - $ref: '#/components/parameters/attributes'
-        - $ref: '#/components/parameters/latitude'
-        - $ref: '#/components/parameters/longitude'
-        - $ref: '#/components/parameters/start_date'
-        - $ref: '#/components/parameters/end_date'
+        - $ref: '#/components/parameters/start_datetime'
+        - $ref: '#/components/parameters/end_datetime'
+        - $ref: '#/components/parameters/applyAttributeScale'
+        - $ref: '#/components/parameters/pixelCollisionType'
+        - $ref: '#/components/parameters/pagination'
+    post:
+      operationId: timeSeriesPOST
+      summary: Fetch time series using POST method.
+      tags:
+        - TimeSeries
+      parameters:
+        - $ref: '#/components/parameters/collectionId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/searchBody_timeseries_POST'
+            examples:
+              timeseries_POST_query:
+                $ref: '#/components/examples/timeseries_POST_query'
+
       responses:
         '200':
-          $ref: '#/components/responses/TimeSeries'
+          description: Get a Time Series of a given Collection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/timeseries'
+              examples:
+                timeseries_result:
+                  $ref: '#/components/examples/timeseries_result'
+                timeseries_pagination_result:
+                  $ref: '#/components/examples/timeseries_pagination_result'
+        '400':
+          $ref: '#/components/responses/InvalidParameter'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  '/{collectionId}/summarize':
+    get:
+      operationId: timeSeriesSummarizeGET
+      summary: Gets the aggregated time series for an geometry.
+      tags:
+        - Summarize
+      responses:
+        '200':
+          description: Get the area time series statistics.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/summarized'
+              examples:
+                summarize_result:
+                  $ref: '#/components/examples/summarize_result'
+        '400':
+          $ref: '#/components/responses/InvalidParameter'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      parameters:
+        - $ref: '#/components/parameters/collectionId'
+        - $ref: '#/components/parameters/geom'
+        - $ref: '#/components/parameters/attributes'
+        - $ref: '#/components/parameters/aggregations'
+        - $ref: '#/components/parameters/start_datetime'
+        - $ref: '#/components/parameters/end_datetime'
+        - $ref: '#/components/parameters/applyAttributeScale'
+        - $ref: '#/components/parameters/pixelCollisionType'
+        - $ref: '#/components/parameters/qa'
+        - $ref: '#/components/parameters/masked'
+
+    post:
+      operationId: timeSeriesSummarizePOST
+      summary: Gets the aggregated time series for an geometry.
+      tags:
+        - Summarize
+      parameters:
+        - $ref: '#/components/parameters/collectionId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/searchBody_summarize_POST'
+            examples:
+              timeseries_result:
+                $ref: '#/components/examples/summarize_POST_query'
+      responses:
+        '200':
+          description: Get the area time series statistics.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/summarized'
+              examples:
+                summarize_result:
+                  $ref: '#/components/examples/summarize_result'
         '400':
           $ref: '#/components/responses/InvalidParameter'
         '404':
@@ -104,315 +172,621 @@ paths:
           $ref: '#/components/responses/ServerError'
 
 components:
+  parameters:
+    geom:
+      name: geom
+      description: >-
+        The GeoJSON representation to retrieve time series for the given location.
+      in: query
+      required: true
+      schema:
+        $ref: '#/components/schemas/geom'
+      style: form
+      explode: false
+
+    start_datetime:
+      name: start_datetime
+      in: query
+      description: >-
+        A datetime representing a start date to use in the search. If this parameter is not defined, the search is performed without initial data.
+
+        Example:  "2018-01-01T23:20:50Z"
+      required: false
+      schema:
+        type: string
+      style: form
+      explode: true
+      example: "2018-01-01T23:20:50Z"
+
+    end_datetime:
+      name: end_datetime
+      in: query
+      description: >-
+        A datetime representing an end date to use in the search. If this parameter is not defined, the search is performed without initial data.
+
+        Example:  "2018-12-31T23:20:50Z"
+      required: false
+      schema:
+        type: string
+      style: form
+      explode: true
+      example: "2018-12-31T23:20:50Z"
+
+    attributes:
+      name: attributes
+      in: query
+      description: A List of attribute names of a Collection.
+      required: true
+      schema:
+        type: array
+        items:
+          type: string
+      explode: false
+
+    collectionId:
+      name: collectionId
+      in: path
+      description: Identifier of a STAC collection.
+      required: true
+      schema:
+        type: string
+
+    aggregations:
+      name: aggregations
+      in: query
+      description: >-
+
+        The aggregation methods applied in time series values.
+
+
+        **Function only available when the geometry is not a point!**
+
+
+        To use this feature, the user must add the desired metrics to the array. For example:
+
+
+        * User wants average pixels for each date: ["mean"]
+
+        * User wants minimum and maximum pixels for each date: ["min", "max"]
+
+
+        If user do not set parameter, all aggregations will be returned
+
+
+        Available metrics are listed below:
+
+        * **min:** Each array item contains the smallest pixel value for that date.
+
+        * **max:** Each array item contains the largest pixel value for that date.
+
+        * **mean:** Each array item contains the average pixel values for that date.
+
+        * **median:** Each array item contains the median of the pixel values for that date.
+
+        * **std:** Each array item contains the standard deviation of the average pixel values for that date.
+
+      required: false
+      schema:
+        $ref: '#/components/schemas/aggregations'
+
+    applyAttributeScale:
+      name: applyAttributeScale
+      in: query
+      description: Apply the attribute scale factor and scale factor offset along the time series. values
+      schema:
+        type: boolean
+        default: false
+
+    pagination:
+      name: pagination
+      in: query
+      description: >-
+        Enable the server pagination with a specified datetime range.
+        Follow the ISO 8601 Duration.
+
+        In order to specify a pagination interval, use `P<Period>` like following:
+        - `P3M`: Interval of 3 months
+        - `P1Y`: Pagination by year
+        - `P16D`: pagination by 16 days.
+      required: false
+      schema:
+        type: string
+      style: form
+      explode: true
+      example: "P1Y"
+
+    pixelCollisionType:
+      name: pixelCollisionType
+      in: query
+      description: Use a geospatial method to retrieve pixel intersection.
+      schema:
+        $ref: '#/components/schemas/pixelCollisionType'
+
+    qa:
+      name: qa
+      in: query
+      description: Use to apply custom cloud masking over time series area.
+      schema:
+        $ref: '#/components/schemas/qa'
+
+    masked:
+      name: masked
+      in: query
+      description: >-
+        Flag to determine whether cloud masking is applied. Default is true.
+        By default, the [BDC Temporal Composed Cubes](https://brazil-data-cube.github.io/products/specifications/processing-flow.html#temporal-compositing)
+        were built using quality assessment bands with custom `clear_data` and `not_clear_data` pixels. The WTSS already uses these values in order to apply
+        cloud masking. You can customize the values specifyng property `qa`.
+      schema:
+        $ref: '#/components/schemas/qa'
+
   schemas:
-    RootType:
-      title: A document with service version and description.
+    landing:
       type: object
+      description: >-
+        The index url resource of WTSS server.
       properties:
         wtss_version:
-          type: string
-        description:
-          type: string
-
-      required:
-        - wtss_version
-        - description
-
-    CoverageListType:
-      title: A document with the list of coverage names.
-      type: object
-      properties:
-        coverages:
+          $ref: '#/components/schemas/wtss_version'
+        links:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/link'
 
-    DimensionType:
-      title: Descriptor of a given dimension.
+    link:
       type: object
+      description: >-
+        Describes a relationship with another link entity.
       properties:
-        name:
+        href:
+          description: Define the actual link in the format of an URL. Relative and absolute links are both allowed.
           type: string
-        min_idx:
-          type: number
-        max_idx:
-          type: number
-      required:
-        - name
-
-    SpatialExtentType:
-      title: The spatial extent of the coverage.
-      type: object
-      properties:
-        xmin:
-          type: number
-        xmax:
-          type: number
-        ymin:
-          type: number
-        ymax:
-          type: number
-
-    SpatialResolutionType:
-      title: The spatial resolution of the coverage cells.
-      type: object
-      properties:
-        x:
-          type: number
-        y:
-          type: number
-
-    CRSType:
-      title: Coordinate reference system.
-      type: object
-      properties:
-        proj4:
+        rel:
+          description: The Relationship between the current document and the linked documents.
           type: string
-        wkt:
+        type:
+          description: The application media type of the document.
+          type: string
+        title:
+          description: A human readable title to be used in rendered displays of the link.
           type: string
 
-    AttributeType:
-      title: Used to describe coverage attributes.
+    timeseries:
       type: object
       properties:
-        name:
-          type: string
-        description:
-          type: string
-        datatype:
-          type: string
-        valid_range:
-          type: object
-          properties:
-            min:
-              type: number
-            max:
-              type: number
-        scale_factor:
-          type: number
-        missing_value:
-          type: number
-      required:
-        - name
-        - datatype
-        - valid_range
-        - scale_factor
-        - missing_value
-
-    CoverageDescriptionType:
-      title: The coverage metadata document.
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        detail:
-          type: string
-        dimensions:
-          type: object
-          properties:
-            x:
-              $ref: '#/components/schemas/DimensionType'
-            y:
-              $ref: '#/components/schemas/DimensionType'
-            t:
-              $ref: '#/components/schemas/DimensionType'
-        spatial_extent:
-          $ref: '#/components/schemas/SpatialExtentType'
-        spatial_resolution:
-          $ref: '#/components/schemas/SpatialResolutionType'
-        crs:
-          $ref: '#/components/schemas/CRSType'
-        timeline:
+        results:
           type: array
           items:
-            type: string
-        attributes:
-          type: array
-          items:
-            $ref: '#/components/schemas/AttributeType'
-      required:
-        - name
-
-    TimeSeriesType:
-      title: Time series document.
-      type: object
-      properties:
-        result:
-          type: object
-          properties:
-            attributes:
-              type: array
-              items:
+            type: object
+            properties:
+              pixel_size:
+                type: array
+                minItems: 2
+                maxItems: 2
+                items:
+                  type: number
+              pixel_center:
+                $ref: '#/components/schemas/geom'
+              timeseries:
                 type: object
                 properties:
-                  attribute:
-                    type: string
                   values:
+                    type: object
+                    properties:
+                      EVI:
+                        type: array
+                        minItems: 1
+                        items:
+                          type: number
+                      NDVI:
+                        type: array
+                        minItems: 1
+                        items:
+                          type: number
+                  timeline:
                     type: array
                     items:
-                      type: number
+                      type: string
+        query:
+          type: object
+          properties:
+            geom:
+              $ref: '#/components/schemas/geom'
+            request:
+              type: object
+              properties:
+                completed:
+                  type: boolean
+                  default: False
+                nextURL:
+                  type: string
+                query_offset:
+                  type: number
+
+    summarized:
+      type: object
+      properties:
+        results:
+          type: object
+          properties:
+            values:
+              type: object
+              properties:
+                NDVI:
+                  type: object
+                  properties:
+                    mean:
+                      type: array
+                      minItems: 1
+                      items:
+                        type: number
+                    std:
+                      type: array
+                      minItems: 1
+                      items:
+                        type: number
+                EVI:
+                  type: object
+                  properties:
+                    mean:
+                      type: array
+                      minItems: 1
+                      items:
+                        type: number
+                    std:
+                      type: array
+                      minItems: 1
+                      items:
+                        type: number
             timeline:
               type: array
               items:
                 type: string
-            coordinates:
-              type: object
-              properties:
-                longitude:
-                  type: number
-                latitude:
-                  type: number
-                col:
-                  type: integer
-                row:
-                  type: integer
-
         query:
-          title: The original query of the client.
           type: object
           properties:
-            coverage:
-              type: string
-            attributes:
-              type: array
-              items:
-                type: string
-            longitude:
-              type: number
-            latitude:
-              type: number
-            start_date:
-              type: string
-            end_date:
-              type: string
+            geom:
+              $ref: '#/components/schemas/geom'
+            request:
+              type: object
+              properties:
+                completed:
+                  type: boolean
+                  default: False
+                nextURL:
+                  type: string
+                query_offset:
+                  type: number
 
-    ExceptionType:
-      title: Exception raised by the service
-      description: 'Information about the exception: an error code plus an optional description.'
+    pixelCollisionType:
+      type: string
+      enum:
+        - center
+        - upperLeft
+        - upperRight
+        - lowerLeft
+        - lowerRight
+      default: 'center'
+
+    pixelCollisionType_POST_query:
       type: object
+      properties:
+        pixelCollisionType:
+          type: string
+          enum:
+            - center
+            - upperLeft
+            - upperRight
+            - lowerLeft
+            - lowerRight
+          default: 'center'
+
+    aggregations:
+      type: array
+      items:
+        type: string
+        enum:
+          - mean
+          - median
+          - min
+          - max
+          - std
+          - q1
+          - q3
+
+    aggregations_POST_query:
+      type: object
+      properties:
+        aggregations:
+          type: array
+          items:
+            type: string
+            enum:
+              - mean
+              - median
+              - min
+              - max
+              - std
+              - q1
+              - q3
+
+    applyAttributeScale_POST_query:
+      type: object
+      properties:
+        applyAttributeScale:
+          type: boolean
+          default: false
+
+    qa:
+      type: object
+      title: Cloud Masking
+      properties:
+        name:
+          type: string
+        clear_data:
+          items:
+            type: integer
+
+    masked:
+      type: boolean
+      default: true
+
+    searchBody_timeseries_POST:
+      description: >-
+        The Parameters for Time Series Request.
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/geomFilter'
+        - type: object
+          properties:
+            attributes:
+              $ref: '#/components/schemas/attributesFilter'
+        - $ref: '#/components/schemas/start_datetime_POST_query'
+        - $ref: '#/components/schemas/end_datetime_POST_query'
+        - $ref: '#/components/schemas/applyAttributeScale_POST_query'
+        - $ref: '#/components/schemas/pixelCollisionType_POST_query'
+        - $ref: '#/components/schemas/pagination_POST_query'
+        - $ref: '#/components/schemas/qa'
+        - type: object
+          properties:
+            masked:
+              $ref: '#/components/schemas/masked'
+
+    searchBody_summarize_POST:
+      description: >-
+        The Parameters for Summarized Time Series Request.
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/geomFilter'
+        - type: object
+          properties:
+            attributes:
+              $ref: '#/components/schemas/attributesFilter'
+        - $ref: '#/components/schemas/aggregations_POST_query'
+        - $ref: '#/components/schemas/start_datetime_POST_query'
+        - $ref: '#/components/schemas/end_datetime_POST_query'
+        - $ref: '#/components/schemas/applyAttributeScale_POST_query'
+        - $ref: '#/components/schemas/pixelCollisionType_POST_query'
+        - $ref: '#/components/schemas/qa'
+        - type: object
+          properties:
+            masked:
+              $ref: '#/components/schemas/masked'
+
+    start_datetime_POST_query:
+      description: Start date to be used in the search.
+      type: object
+      properties:
+        start_datetime:
+          type: string
+          format: "date-time"
+
+    end_datetime_POST_query:
+      description: End date to be used in the search.
+      type: object
+      properties:
+        start_datetime:
+          type: string
+          format: "date-time"
+
+    pagination_POST_query:
+      description: Apply a page offset in the server query.
+      type: object
+      properties:
+        pagination:
+          type: string
+
+    attributesFilter:
+      description: An object representing a date+time based filter.
+      type: array
+      items:
+        type: string
+      required:
+        - attributes
+      properties:
+        attributes:
+          type: array
+          minItems: 1
+          items:
+            type: string
+
+    geom:
+      type: object
+      oneOf:
+        - $ref: 'https://geojson.org/schema/Point.json'
+        - $ref: 'https://geojson.org/schema/Polygon.json'
+        # - $ref: 'https://geojson.org/schema/MultiPoint.json'
+        # - $ref: 'https://geojson.org/schema/MultiPolygon.json'
+
+    geomFilter:
+      type: object
+      description: Only returns items that intersect with the provided polygon.
+      required:
+        - geom
+      properties:
+        geom:
+          $ref: '#/components/schemas/geom'
+
+    exception:
+      type: object
+      description: >-
+        Information about the exception: an error code plus an optional
+        description.
+      required:
+        - code
       properties:
         code:
           type: string
         description:
           type: string
-      required:
-        - code
 
-  parameters:
-    coverage_name:
-      name: name
-      in: query
-      description: Coverage name.
-      required: true
-      schema:
-        type: string
-
-    coverage:
-      name: coverage
-      in: query
-      description: Coverage name.
-      required: true
-      schema:
-        type: string
-
-    attributes:
-      name: attributes
-      in: query
-      description: >
-        List of coverage attributes delimited by comma. i.e `attributes=ndvi,evi`.
-      required: true
-      schema:
-        type: string
-
-    latitude:
-      name: latitude
-      in: query
-      description: >
-        Latitude coordinate. i.e `latitude=-12`.
-      required: true
-      schema:
-        type: number
-
-    longitude:
-      name: longitude
-      in: query
-      description: >
-        Longitude coordinate. i.e `longitude=-54`.
-      required: true
-      schema:
-        type: number
-
-    start_date:
-      name: start_date
-      in: query
-      description: >
-        Start date. i.e `start_date=2015-01-01`.
-      schema:
-        type: string
-
-    end_date:
-      name: end_date
-      in: query
-      description: >
-        End date. i.e `end_date=2017-12-31`.
-      schema:
-        type: string
+    wtss_version:
+      type: string
+      description: WTSS version
 
   responses:
-    Root:
-      description: 'The landing page show information about Web Time Series Service'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/RootType'
-
-    ListCoverages:
-      description: 'JSON document with the name of coverages offered by the service.'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CoverageListType'
-
-    DescribeCoverage:
-      description: 'A JSON document with the coverage metadata.'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CoverageDescriptionType'
-
-    TimeSeries:
-      description: 'A JSON document with the coverage time series.'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/TimeSeriesType'
-
     InvalidParameter:
-      description: 'A query parameter has an invalid value.'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ExceptionType'
-
+        description: A query parameter has an invalid value.
+        content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/exception'
     NotFound:
-      description: 'The requested URI was not found.'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ExceptionType'
-
+        description: The requested URI was not found.
+        content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/exception'
     ServerError:
-      description: 'A JSON document informing that an error has occurred in the system.'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ExceptionType'
-        text/html:
-          schema:
-            type: string
+        description: A server error occurred.
+        content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/exception'
+    LandingPage:
+        description: Landing Page
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/landing'
+
+  examples:
+    timeseries_POST_query:
+      summary: Time Series POST Query Example
+      value:
+        geom:
+          type: Point
+          coordinates: [-52.63215, -28.31698]
+        attributes: ['NDVI', 'EVI']
+        start_datetime: "2018-01-01T00:00:00Z"
+        end_datetime: "2018-02-20T00:00:00Z"
+        applyAttributeScale: true
+        pixelCollisionType: "center"
+        pagination: P1Y
+
+    summarize_POST_query:
+      summary: Summarize POST Query Example
+      value:
+        geom:
+          type: Point
+          coordinates: [-52.63215, -28.31698]
+        attributes: ['NDVI', 'EVI']
+        start_datetime: "2018-02-12T00:00:00Z"
+        end_datetime: "2018-02-20T00:00:00Z"
+        aggregations: ['mean', 'std']
+        applyAttributeScale: true
+        pixelCollisionType: "center"
+
+    timeseries_result:
+      summary: Time Series Example
+      value:
+        results: [
+          {
+            pixel_size: [64.0001, 64.00009],
+            pixel_center: {
+              type: Point,
+              coordinates: [-52.63215, -28.31698]
+            },
+            timeseries: {
+              values: {
+                NDVI: [0.365, 0.425, 0.468, 0.563],
+                EVI: [0.394, 0.563, 0.572, 0.630]
+              },
+              timeline: ["2018-01-01T00:00:00Z", "2018-01-17T00:00:00Z", "2018-02-02T00:00:00Z", "2018-02-18T00:00:00Z"]
+            }
+          },
+        ]
+        query:
+          geom:
+            type: Point
+            coordinates: [-52.63215, -28.31698]
+          attributes: ['NDVI', 'EVI']
+          start_datetime: "2018-01-01T00:00:00Z"
+          end_datetime: "2018-02-22T00:00:00Z"
+          applyAttributeScale: true
+          pixelCollisionType: "center"
+
+    timeseries_pagination_result:
+      summary: Time Series Pagination Example
+      value:
+        results: [
+          {
+            pixel_size: [64.0001, 64.00009],
+            pixel_center: {
+              type: Point,
+              coordinates: [-52.63215, -28.31698]
+            },
+            timeseries: {
+              values: {
+                NDVI: [0.8598, 0.8317, 0.8410, 0.8714, 0.6047, 0.883, 0.8636, 0.8432, 0.8726, 0.8783, 0.8791, 0.8609, 0.8646, 0.8759, 0.8625, 0.8430, 0.8709, 0.8981, 0.8824, 0.6465, 0.5303, 0.8206, 0.8706],
+                EVI: [0.8920, 0.8490, 0.8515, 0.8557, 0.8491, 0.8554, 0.8782, 0.8653, 0.8605, 0.8618, 0.8534, 0.878, 0.8648, 0.8668, 0.8729, 0.8547, 0.8555, 0.8547, 0.5077, 0.4918, 0.8595, 0.8929, 0.8929]
+              },
+              timeline: ['2017-01-01T00:00:00Z', '2017-01-17T00:00:00Z', '2017-02-02T00:00:00Z', '2017-02-18T00:00:00Z', '2017-03-06T00:00:00Z', '2017-03-22T00:00:00Z', '2017-04-07T00:00:00Z', '2017-04-23T00:00:00Z', '2017-05-09T00:00:00Z', '2017-05-25T00:00:00Z', '2017-06-10T00:00:00Z', '2017-06-26T00:00:00Z', '2017-07-12T00:00:00Z', '2017-07-28T00:00:00Z', '2017-08-13T00:00:00Z', '2017-08-29T00:00:00Z', '2017-09-14T00:00:00Z', '2017-09-30T00:00:00Z', '2017-10-16T00:00:00Z', '2017-11-01T00:00:00Z', '2017-11-17T00:00:00Z', '2017-12-03T00:00:00Z', '2017-12-19T00:00:00Z'
+              ]
+            }
+          },
+        ]
+        query:
+          geom:
+            type: Point
+            coordinates: [-52.63215, -28.31698]
+          attributes: ['NDVI', 'EVI']
+          start_datetime: "2017-01-01T00:00:00Z"
+          end_datetime: "2018-05-15T00:00:00Z"
+          applyAttributeScale: true
+          pixelCollisionType: "center"
+        pagination: [
+          {
+            page: 0,
+            start_datetime: '2018-01-01T00:00:00Z',
+            end_datetime: '2018-05-09T00:00:00Z'
+          }
+        ]
+
+    summarize_result:
+      summary: Summarize Result Example
+      value:
+        results:
+          values:
+            NDVI:
+              mean: [0.365, 0.425, 0.468, 0.563]
+              std: [0.394, 0.563, 0.572, 0.630]
+            EVI:
+              mean: [0.365, 0.425, 0.468, 0.563]
+              std: [0.394, 0.563, 0.572, 0.630]
+          timeline: ["2018-01-01T00:00:00Z", "2018-01-17T00:00:00Z", "2018-02-02T00:00:00Z", "2018-02-18T00:00:00Z"]
+        query:
+          geom:
+            type: Point
+            coordinates: [-52.63215, -28.31698]
+          attributes: ['NDVI', 'EVI']
+          start_datetime: "2018-01-01T00:00:00Z"
+          end_datetime: "2018-02-20T00:00:00Z"
+          aggregations: ['mean', 'std']
+          applyAttributeScale: true
+          pixelCollisionType: "center"
+
 
 externalDocs:
   description: Web Time Series Service specification repository.
-  url: https://github.com/brazil-data-cube/wtss-spec
+  url: 'https://github.com/brazil-data-cube/wtss-spec'
