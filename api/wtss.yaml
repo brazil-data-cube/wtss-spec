@@ -2,6 +2,9 @@ openapi: 3.0.1
 info:
   version: '2.0'
   title: Web Time Series Service
+  license:
+    name: "GPL v3"
+    url: "https://www.gnu.org/licenses/gpl-3.0.txt"
   description: >
         Web Time Series Service (WTSS) is a lightweight web service for handling time series data from remote sensing imagery. Given a location and a time interval you can retrieve the according time series as a JSON array of numbers.
 
@@ -534,14 +537,20 @@ components:
       type: object
       allOf:
         - $ref: '#/components/schemas/geomFilter'
-        - $ref: '#/components/schemas/attributesFilter'
+        - type: object
+          properties:
+            attributes:
+              $ref: '#/components/schemas/attributesFilter'
         - $ref: '#/components/schemas/start_datetime_POST_query'
         - $ref: '#/components/schemas/end_datetime_POST_query'
         - $ref: '#/components/schemas/applyAttributeScale_POST_query'
         - $ref: '#/components/schemas/pixelCollisionType_POST_query'
         - $ref: '#/components/schemas/pagination_POST_query'
         - $ref: '#/components/schemas/qa'
-        - $ref: '#/components/schemas/masked'
+        - type: object
+          properties:
+            masked:
+              $ref: '#/components/schemas/masked'
 
     searchBody_summarize_POST:
       description: >-
@@ -549,14 +558,20 @@ components:
       type: object
       allOf:
         - $ref: '#/components/schemas/geomFilter'
-        - $ref: '#/components/schemas/attributesFilter'
+        - type: object
+          properties:
+            attributes:
+              $ref: '#/components/schemas/attributesFilter'
         - $ref: '#/components/schemas/aggregations_POST_query'
         - $ref: '#/components/schemas/start_datetime_POST_query'
         - $ref: '#/components/schemas/end_datetime_POST_query'
         - $ref: '#/components/schemas/applyAttributeScale_POST_query'
         - $ref: '#/components/schemas/pixelCollisionType_POST_query'
         - $ref: '#/components/schemas/qa'
-        - $ref: '#/components/schemas/masked'
+        - type: object
+          properties:
+            masked:
+              $ref: '#/components/schemas/masked'
 
     start_datetime_POST_query:
       description: Start date to be used in the search.

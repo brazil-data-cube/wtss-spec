@@ -7,7 +7,7 @@
     "build": "redoc-cli bundle api/wtss.yaml --output dist/index.html"
   },
   "author": "Gilberto Queiroz",
-  "license": "MIT",
+  "license": "GPLv3",
   "dependencies": {
     "redoc-cli": "0.13.7"
   }

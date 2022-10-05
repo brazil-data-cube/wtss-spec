@@ -1,16 +1,26 @@
 ..
     This file is part of Web Time Series Service Specification.
-    Copyright (C) 2019 INPE.
+    Copyright (C) 2022 INPE.
 
-    Web Time Series Service Specification is free software; you can redistribute it and/or modify it
-    under the terms of the MIT License; see LICENSE file for more details.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program. If not, see <https://www.gnu.org/licenses/gpl-3.0.html>.
 
 
 =======================================
 Web Time Series Service - Specification
 =======================================
 
-.. image:: https://img.shields.io/badge/license-MIT-green
+.. image:: https://img.shields.io/badge/License-GPLv3-blue.svg
         :target: https://github.com/brazil-data-cube/wtss-spec/blob/master/LICENSE
         :alt: Software License
 
@@ -22,9 +32,9 @@ Web Time Series Service - Specification
         :target: https://github.com/brazil-data-cube/wtss-spec/releases
         :alt: Release
 
-.. image:: https://badges.gitter.im/brazil-data-cube/community.png
-        :target: https://gitter.im/brazil-data-cube/community#
-        :alt: Join the chat
+.. image:: https://img.shields.io/discord/689541907621085198?logo=discord&logoColor=ffffff&color=7389D8
+        :target: https://discord.com/channels/689541907621085198#
+        :alt: Join us at Discord
 
 
 About
@@ -314,14 +324,16 @@ For Python developers, you can serve the HTMl with:
 
 .. code-block:: shell
 
-        python3.7 -m http.server 8080 --directory dist
+        python3 -m http.server 8080 --directory dist
 
 
 License
 =======
 
 .. admonition::
-    Copyright (C) 2019 INPE.
+    Copyright (C) 2022 INPE.
 
-    Web Time Series Service is free software; you can redistribute it and/or modify it
-    under the terms of the MIT License; see LICENSE file for more details.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
