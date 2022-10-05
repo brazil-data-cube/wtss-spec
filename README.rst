@@ -188,6 +188,8 @@ You can retrieve the time series for a given location through the  ``time_series
 
 With body:
 
+.. code-block:: json
+
     {
         "attributes": [
             "NDVI"
